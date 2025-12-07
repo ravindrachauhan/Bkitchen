@@ -1,0 +1,785 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crafting Flavors with Class - Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #e8e5d8 0%, #d4cfc0 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            padding: 50px 45px;
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 42px;
+            color: #2c2c2c;
+            font-weight: 400;
+            line-height: 1.3;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            color: #5a7553;
+            font-style: italic;
+            font-weight: 300;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 35px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            background: #f5f5f5;
+            color: #666;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: #2d5a3d;
+            color: white;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: #e8e8e8;
+        }
+
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            color: #2c2c2c;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="tel"],
+        input[type="email"],
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        select {
+            cursor: pointer;
+            background: white;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        input[type="tel"]:focus,
+        input[type="email"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #2d5a3d;
+            box-shadow: 0 0 0 3px rgba(45, 90, 61, 0.1);
+        }
+
+        input::placeholder {
+            color: #aaa;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        input[type="checkbox"],
+        input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            cursor: pointer;
+            accent-color: #2d5a3d;
+        }
+
+        .checkbox-group label,
+        .radio-group label {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 400;
+            cursor: pointer;
+        }
+
+        .radio-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .radio-options {
+            margin-bottom: 20px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: #2d5a3d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .submit-btn:hover {
+            background: #234a30;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(45, 90, 61, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .forgot-password {
+            text-align: center;
+        }
+
+        .forgot-password a {
+            color: #d4a017;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .forgot-password a:hover {
+            color: #b8890f;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .back-link a {
+            color: #2d5a3d;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .otp-inputs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        .otp-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .otp-input:focus {
+            outline: none;
+            border-color: #2d5a3d;
+            box-shadow: 0 0 0 3px rgba(45, 90, 61, 0.1);
+        }
+
+        .resend-otp {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .resend-otp a {
+            color: #d4a017;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .resend-otp a:hover {
+            color: #b8890f;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .info-text {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .role-badge.admin {
+            background: #2d5a3d;
+            color: white;
+        }
+
+        .role-badge.manager {
+            background: #d4a017;
+            color: white;
+        }
+
+        .role-badge.waiter {
+            background: #5a7553;
+            color: white;
+        }
+
+        .role-badge.chef {
+            background: #c77e3f;
+            color: white;
+        }
+
+        .role-badge.cleaner {
+            background: #8b9098;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="header">
+            <h1>Crafting Flavors with Class</h1>
+            <p>Une Fusion Culinaire Extraordinaire</p>
+        </div>
+
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="showLogin()">Login</button>
+            <button class="tab-btn" onclick="showSignUp()">Sign Up</button>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginForm" class="form-section active">
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="user-role">Login As</label>
+                    <select id="user-role" required onchange="updateRoleInfo()">
+                        <option value="">Select your role</option>
+                        <option value="admin">Admin / Owner</option>
+                        <option value="manager">Manager</option>
+                        <option value="waiter">Waiter / Cashier</option>
+                        <option value="chef">Chef / Kitchen Staff</option>
+                        <option value="cleaner">Cleaner / Maintenance Staff</option>
+                    </select>
+                </div>
+
+                <div id="roleInfo" class="info-text" style="display: none;"></div>
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter your username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="remember">
+                    <label for="remember">Remember me</label>
+                </div>
+
+                <button type="submit" class="submit-btn" onclick="">Sign In</button>
+
+                <div class="forgot-password">
+                    <a onclick="showForgotPassword()">Forgot your password?</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sign Up Form -->
+        <div id="signupForm" class="form-section">
+            <form onsubmit="handleSignUp(event)">
+                <div class="form-group">
+                    <label for="signup-role">Register As</label>
+                    <select id="signup-role" required>
+                        <option value="">Select your role</option>
+                        <option value="admin">Admin / Owner</option>
+                        <option value="manager">Manager</option>
+                        <option value="waiter">Waiter / Cashier</option>
+                        <option value="chef">Chef / Kitchen Staff</option>
+                        <option value="cleaner">Cleaner / Maintenance Staff</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="signup-fullname">Full Name</label>
+                    <input type="text" id="signup-fullname" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="signup-email">Email Address</label>
+                    <input type="email" id="signup-email" placeholder="your.email@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="signup-username">Username</label>
+                    <input type="text" id="signup-username" placeholder="Choose a username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="signup-phone">Phone Number</label>
+                    <input type="tel" id="signup-phone" placeholder="+91 98765 43210" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="signup-restaurant">Restaurant Name</label>
+                    <input type="text" id="signup-restaurant" placeholder="Your restaurant name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" placeholder="Create a password (min 8 characters)" minlength="8" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="signup-confirm-password">Confirm Password</label>
+                    <input type="password" id="signup-confirm-password" placeholder="Re-enter your password" required>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="terms" required>
+                    <label for="terms">I agree to the Terms & Conditions</label>
+                </div>
+
+                <button type="submit" class="submit-btn">Create Account</button>
+
+                <div class="back-link">
+                    Already have an account? <a onclick="showLogin()">Login here</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Forgot Password Form -->
+        <div id="forgotPasswordForm" class="form-section">
+            <div class="info-text">
+                Enter your registered phone number to receive an OTP for password reset.
+            </div>
+
+            <form onsubmit="handleForgotPassword(event)">
+                <div class="form-group">
+                    <label for="forgot-phone">Phone Number</label>
+                    <input type="tel" id="forgot-phone" placeholder="+91 98765 43210" required>
+                </div>
+
+                <button type="submit" class="submit-btn">Send OTP</button>
+
+                <div class="back-link">
+                    <a onclick="showLogin()">← Back to Login</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- OTP Verification Form -->
+        <div id="otpForm" class="form-section">
+            <div class="success-message" id="otpSentMessage">
+                OTP has been sent to your phone number!
+            </div>
+
+            <div class="info-text">
+                Please enter the 6-digit OTP sent to your registered phone number.
+            </div>
+
+            <form onsubmit="handleOTPVerification(event)">
+                <div class="form-group">
+                    <label>Enter OTP</label>
+                    <div class="otp-inputs">
+                        <input type="text" maxlength="1" class="otp-input" id="otp1" required>
+                        <input type="text" maxlength="1" class="otp-input" id="otp2" required>
+                        <input type="text" maxlength="1" class="otp-input" id="otp3" required>
+                        <input type="text" maxlength="1" class="otp-input" id="otp4" required>
+                        <input type="text" maxlength="1" class="otp-input" id="otp5" required>
+                        <input type="text" maxlength="1" class="otp-input" id="otp6" required>
+                    </div>
+                </div>
+
+                <div class="resend-otp">
+                    Didn't receive OTP? <a onclick="resendOTP()">Resend</a>
+                </div>
+
+                <button type="submit" class="submit-btn">Verify OTP</button>
+
+                <div class="back-link">
+                    <a onclick="showForgotPassword()">← Change Phone Number</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Reset Password Form -->
+        <div id="resetPasswordForm" class="form-section">
+            <div class="success-message show">
+                OTP verified successfully!
+            </div>
+
+            <form onsubmit="handleResetPassword(event)">
+                <div class="form-group">
+                    <label for="new-password">New Password</label>
+                    <input type="password" id="new-password" placeholder="Enter new password (min 8 characters)" minlength="8" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm-password">Confirm Password</label>
+                    <input type="password" id="confirm-password" placeholder="Confirm new password" required>
+                </div>
+
+                <button type="submit" class="submit-btn">Reset Password</button>
+
+                <div class="back-link">
+                    <a onclick="showLogin()">← Back to Login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Role information
+        const roleInfo = {
+            admin: {
+                title: 'Admin / Owner',
+                description: 'Full access to create, update, and manage everything including staff accounts, orders, inventory, reports, and settings.',
+                badge: 'admin'
+            },
+            manager: {
+                title: 'Manager',
+                description: 'Can view dashboards, manage orders, check inventory, generate reports, and apply discounts. Cannot add/remove staff or modify system settings.',
+                badge: 'manager'
+            },
+            waiter: {
+                title: 'Waiter / Cashier',
+                description: 'Can view assigned orders, take new orders, accept/modify orders, apply predefined discounts, generate receipts, and handle order payments.',
+                badge: 'waiter'
+            },
+            chef: {
+                title: 'Chef / Kitchen Staff',
+                description: 'View low stock alerts, see accepted/pending orders, mark food as prepared/ready, and check what needs to be cooked.',
+                badge: 'chef'
+            },
+            cleaner: {
+                title: 'Cleaner / Maintenance Staff',
+                description: 'Login to confirm attendance. System login for attendance/role tracking purposes.',
+                badge: 'cleaner'
+            }
+        };
+
+        function updateRoleInfo() {
+            const selectedRole = document.getElementById('user-role').value;
+            const roleInfoDiv = document.getElementById('roleInfo');
+            
+            if (selectedRole && roleInfo[selectedRole]) {
+                const info = roleInfo[selectedRole];
+                roleInfoDiv.innerHTML = `
+                    <strong>${info.title}</strong>
+                    <span class="role-badge ${info.badge}">${info.title}</span>
+                    <br><br>
+                    ${info.description}
+                `;
+                roleInfoDiv.style.display = 'block';
+            } else {
+                roleInfoDiv.style.display = 'none';
+            }
+        }
+
+        // Tab switching
+        function showLogin() {
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById('loginForm').classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        }
+
+        function showSignUp() {
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById('signupForm').classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        }
+
+        function showForgotPassword() {
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById('forgotPasswordForm').classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+        }
+
+        function showOTPForm() {
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById('otpForm').classList.add('active');
+            document.getElementById('otpSentMessage').classList.add('show');
+            document.getElementById('otp1').focus();
+        }
+
+        function showResetPassword() {
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById('resetPasswordForm').classList.add('active');
+        }
+
+        // Form handlers
+        function handleLogin(event) {
+            event.preventDefault();
+            const role = document.getElementById('user-role').value;
+            const username = document.getElementById('username').value;
+            
+            if (!role) {
+                alert('Please select your role to continue!');
+                return;
+            }
+            
+            const roleTitle = roleInfo[role].title;
+            alert(`Login successful!\n\nWelcome, ${username}!\nRole: ${roleTitle}\n\nRedirecting to ${roleTitle} dashboard...`);
+            
+            // Here you would redirect to the appropriate dashboard based on role
+            console.log('Redirecting to dashboard for role:', role);
+        }
+
+        function handleSignUp(event) {
+            event.preventDefault();
+            
+            const role = document.getElementById('signup-role').value;
+            const fullname = document.getElementById('signup-fullname').value;
+            const email = document.getElementById('signup-email').value;
+            const username = document.getElementById('signup-username').value;
+            const phone = document.getElementById('signup-phone').value;
+            const restaurant = document.getElementById('signup-restaurant').value;
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('signup-confirm-password').value;
+            const termsAccepted = document.getElementById('terms').checked;
+            
+            // Validate role
+            if (!role) {
+                alert('Please select your role!');
+                return;
+            }
+            
+            // Validate password match
+            if (password !== confirmPassword) {
+                alert('Passwords do not match! Please try again.');
+                return;
+            }
+            
+            // Validate password strength
+            if (password.length < 8) {
+                alert('Password must be at least 8 characters long!');
+                return;
+            }
+            
+            // Validate terms acceptance
+            if (!termsAccepted) {
+                alert('Please accept the Terms & Conditions to continue.');
+                return;
+            }
+            
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('Please enter a valid email address!');
+                return;
+            }
+            
+            // Validate phone number (basic check)
+            const phoneRegex = /^[\+]?[0-9]{10,15}$/;
+            if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+                alert('Please enter a valid phone number!');
+                return;
+            }
+            
+            // Success
+            const roleTitle = roleInfo[role].title;
+            console.log('Account created:', { fullname, email, username, phone, restaurant, role });
+            alert(`Account created successfully!\n\nWelcome, ${fullname}!\nRestaurant: ${restaurant}\nRole: ${roleTitle}\n\nPlease login to continue.`);
+            
+            // Clear form
+            document.getElementById('signupForm').querySelector('form').reset();
+            showLogin();
+        }
+
+        function handleForgotPassword(event) {
+            event.preventDefault();
+            const phone = document.getElementById('forgot-phone').value;
+            
+            // Validate phone
+            const phoneRegex = /^[\+]?[0-9]{10,15}$/;
+            if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+                alert('Please enter a valid phone number!');
+                return;
+            }
+            
+            // Simulate sending OTP
+            console.log('Sending OTP to:', phone);
+            showOTPForm();
+        }
+
+        function handleOTPVerification(event) {
+            event.preventDefault();
+            const otp = Array.from(document.querySelectorAll('.otp-input'))
+                .map(input => input.value)
+                .join('');
+            console.log('Verifying OTP:', otp);
+            
+            // Simulate OTP verification
+            if (otp.length === 6) {
+                showResetPassword();
+            } else {
+                alert('Please enter all 6 digits');
+            }
+        }
+
+        function handleResetPassword(event) {
+            event.preventDefault();
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (newPassword.length < 8) {
+                alert('Password must be at least 8 characters long!');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+            
+            alert('Password reset successfully!\n\nYou can now login with your new password.');
+            
+            // Clear forms
+            document.getElementById('resetPasswordForm').querySelector('form').reset();
+            document.querySelectorAll('.otp-input').forEach(input => input.value = '');
+            document.getElementById('forgot-phone').value = '';
+            
+            showLogin();
+        }
+
+        function resendOTP() {
+            alert('OTP resent successfully!\n\nPlease check your phone.');
+            document.getElementById('otp1').focus();
+        }
+
+        // OTP input auto-focus
+        document.addEventListener('DOMContentLoaded', function() {
+            const otpInputs = document.querySelectorAll('.otp-input');
+            
+            otpInputs.forEach((input, index) => {
+                input.addEventListener('input', function() {
+                    if (this.value.length === 1 && index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus();
+                    }
+                });
+                
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && this.value === '' && index > 0) {
+                        otpInputs[index - 1].focus();
+                    }
+                });
+
+                // Only allow numbers
+                input.addEventListener('input', function() {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

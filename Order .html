@@ -1,0 +1,406 @@
+import React, { useState, useEffect } from 'react';
+import { X, Plus, Minus, Search } from 'lucide-react';
+
+const OrderManagementSystem = () => {
+  const [orders, setOrders] = useState([]);
+  const [showNewOrder, setShowNewOrder] = useState(false);
+  const [currentOrder, setCurrentOrder] = useState({
+    items: [],
+    customerName: '',
+    tableNumber: '',
+    orderType: 'dine-in',
+    notes: ''
+  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+
+  const menuItems = [
+    { id: 1, name: 'Margherita Pizza', price: 350, category: 'Pizza' },
+    { id: 2, name: 'Paneer Tikka Pizza', price: 420, category: 'Pizza' },
+    { id: 3, name: 'Chicken Burger', price: 180, category: 'Burgers' },
+    { id: 4, name: 'Veg Burger', price: 120, category: 'Burgers' },
+    { id: 5, name: 'Pasta Alfredo', price: 280, category: 'Pasta' },
+    { id: 6, name: 'Cold Coffee', price: 80, category: 'Beverages' },
+    { id: 7, name: 'Masala Dosa', price: 100, category: 'South Indian' },
+    { id: 8, name: 'Idli Sambar', price: 80, category: 'South Indian' }
+  ];
+
+  useEffect(() => {
+    const sampleOrders = [
+      {
+        id: 'ORD001',
+        customerName: 'Rahul Sharma',
+        tableNumber: '5',
+        orderType: 'dine-in',
+        items: [
+          { id: 1, name: 'Margherita Pizza', price: 350, quantity: 2 },
+          { id: 6, name: 'Cold Coffee', price: 80, quantity: 2 }
+        ],
+        status: 'preparing',
+        time: new Date().toISOString(),
+        total: 860,
+        notes: 'Extra cheese'
+      },
+      {
+        id: 'ORD002',
+        customerName: 'Priya Patel',
+        tableNumber: '3',
+        orderType: 'dine-in',
+        items: [
+          { id: 7, name: 'Masala Dosa', price: 100, quantity: 3 }
+        ],
+        status: 'pending',
+        time: new Date().toISOString(),
+        total: 300,
+        notes: ''
+      }
+    ];
+    setOrders(sampleOrders);
+  }, []);
+
+  const addItemToOrder = (item) => {
+    const existingItem = currentOrder.items.find(i => i.id === item.id);
+    if (existingItem) {
+      setCurrentOrder({
+        ...currentOrder,
+        items: currentOrder.items.map(i =>
+          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+        )
+      });
+    } else {
+      setCurrentOrder({
+        ...currentOrder,
+        items: [...currentOrder.items, { ...item, quantity: 1 }]
+      });
+    }
+  };
+
+  const updateItemQuantity = (itemId, change) => {
+    setCurrentOrder({
+      ...currentOrder,
+      items: currentOrder.items.map(item =>
+        item.id === itemId
+          ? { ...item, quantity: Math.max(0, item.quantity + change) }
+          : item
+      ).filter(item => item.quantity > 0)
+    });
+  };
+
+  const calculateTotal = (items) => {
+    return items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  };
+
+  const submitOrder = () => {
+    if (currentOrder.items.length === 0) {
+      alert('Please add items to the order');
+      return;
+    }
+    if (!currentOrder.customerName || !currentOrder.tableNumber) {
+      alert('Please enter customer name and table number');
+      return;
+    }
+
+    const newOrder = {
+      id: `ORD${String(orders.length + 1).padStart(3, '0')}`,
+      ...currentOrder,
+      status: 'pending',
+      time: new Date().toISOString(),
+      total: calculateTotal(currentOrder.items)
+    };
+
+    setOrders([newOrder, ...orders]);
+    
+    setCurrentOrder({
+      items: [],
+      customerName: '',
+      tableNumber: '',
+      orderType: 'dine-in',
+      notes: ''
+    });
+    setShowNewOrder(false);
+    alert('Order placed successfully!');
+  };
+
+  const updateOrderStatus = (orderId, newStatus) => {
+    setOrders(orders.map(order =>
+      order.id === orderId ? { ...order, status: newStatus } : order
+    ));
+  };
+
+  const removeOrder = (orderId) => {
+    if (window.confirm('Are you sure you want to cancel this order?')) {
+      setOrders(orders.filter(order => order.id !== orderId));
+    }
+  };
+
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         order.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterStatus === 'all' || order.status === filterStatus;
+    return matchesSearch && matchesFilter;
+  });
+
+  const getStatusColor = (status) => {
+    const colors = {
+      pending: 'bg-yellow-100 text-yellow-800',
+      preparing: 'bg-blue-100 text-blue-800',
+      completed: 'bg-green-100 text-green-800',
+      cancelled: 'bg-red-100 text-red-800'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <nav className="bg-gradient-to-r from-green-800 to-green-700 text-white shadow-lg">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold">Bhatt's Kitchen</h1>
+            <p className="text-sm text-green-100">Order Management System</p>
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-yellow-500">
+            <h3 className="text-gray-600 text-sm font-medium mb-1">Total Orders</h3>
+            <p className="text-3xl font-bold text-gray-800">{orders.length}</p>
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-blue-500">
+            <h3 className="text-gray-600 text-sm font-medium mb-1">Pending</h3>
+            <p className="text-3xl font-bold text-gray-800">
+              {orders.filter(o => o.status === 'pending').length}
+            </p>
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-green-500">
+            <h3 className="text-gray-600 text-sm font-medium mb-1">Completed</h3>
+            <p className="text-3xl font-bold text-gray-800">
+              {orders.filter(o => o.status === 'completed').length}
+            </p>
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-orange-500">
+            <h3 className="text-gray-600 text-sm font-medium mb-1">Revenue Today</h3>
+            <p className="text-3xl font-bold text-gray-800">
+              ₹{orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.total, 0)}
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl shadow-md mb-6 flex flex-wrap gap-4 items-center justify-between">
+          <button
+            onClick={() => setShowNewOrder(true)}
+            className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 rounded-lg font-medium transition flex items-center gap-2"
+          >
+            <Plus size={20} />
+            New Order
+          </button>
+
+          <div className="flex gap-4 flex-1 max-w-2xl">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+              <input
+                type="text"
+                placeholder="Search orders..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            >
+              <option value="all">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="preparing">Preparing</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {filteredOrders.map(order => (
+            <div key={order.id} className="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-700">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-800">{order.id}</h3>
+                  <p className="text-gray-600">{order.customerName}</p>
+                  <p className="text-sm text-gray-500">Table: {order.tableNumber} | {order.orderType}</p>
+                </div>
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
+                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                </span>
+              </div>
+
+              <div className="border-t border-gray-200 pt-4 mb-4">
+                {order.items.map((item, idx) => (
+                  <div key={idx} className="flex justify-between py-2">
+                    <span className="text-gray-700">{item.name} x{item.quantity}</span>
+                    <span className="font-medium">₹{item.price * item.quantity}</span>
+                  </div>
+                ))}
+              </div>
+
+              {order.notes && (
+                <p className="text-sm text-gray-600 mb-4 bg-yellow-50 p-2 rounded">
+                  Note: {order.notes}
+                </p>
+              )}
+
+              <div className="flex justify-between items-center mb-4 pt-4 border-t border-gray-200">
+                <span className="font-bold text-lg">Total:</span>
+                <span className="font-bold text-xl text-green-700">₹{order.total}</span>
+              </div>
+
+              <div className="flex gap-2">
+                {order.status === 'pending' && (
+                  <button
+                    onClick={() => updateOrderStatus(order.id, 'preparing')}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition"
+                  >
+                    Start Preparing
+                  </button>
+                )}
+                {order.status === 'preparing' && (
+                  <button
+                    onClick={() => updateOrderStatus(order.id, 'completed')}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg transition"
+                  >
+                    Mark Complete
+                  </button>
+                )}
+                <button
+                  onClick={() => removeOrder(order.id)}
+                  className="px-4 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg transition"
+                >
+                  Cancel
+                </button>
+              </div>
+
+              <p className="text-xs text-gray-400 mt-3">
+                {new Date(order.time).toLocaleString()}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {filteredOrders.length === 0 && (
+          <div className="bg-white rounded-xl shadow-md p-12 text-center">
+            <p className="text-gray-500 text-lg">No orders found</p>
+          </div>
+        )}
+      </div>
+
+      {showNewOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-green-700 text-white p-6 flex justify-between items-center">
+              <h2 className="text-2xl font-bold">New Order</h2>
+              <button onClick={() => setShowNewOrder(false)} className="hover:bg-green-800 p-2 rounded">
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <input
+                  type="text"
+                  placeholder="Customer Name"
+                  value={currentOrder.customerName}
+                  onChange={(e) => setCurrentOrder({ ...currentOrder, customerName: e.target.value })}
+                  className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Table Number"
+                  value={currentOrder.tableNumber}
+                  onChange={(e) => setCurrentOrder({ ...currentOrder, tableNumber: e.target.value })}
+                  className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                />
+                <select
+                  value={currentOrder.orderType}
+                  onChange={(e) => setCurrentOrder({ ...currentOrder, orderType: e.target.value })}
+                  className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="dine-in">Dine In</option>
+                  <option value="takeaway">Takeaway</option>
+                  <option value="delivery">Delivery</option>
+                </select>
+              </div>
+
+              <h3 className="font-bold text-lg mb-4">Menu Items</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+                {menuItems.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => addItemToOrder(item)}
+                    className="bg-gray-50 hover:bg-green-50 border-2 border-gray-200 hover:border-green-500 p-4 rounded-lg text-left transition"
+                  >
+                    <p className="font-medium text-gray-800">{item.name}</p>
+                    <p className="text-sm text-gray-500">{item.category}</p>
+                    <p className="font-bold text-green-700 mt-1">₹{item.price}</p>
+                  </button>
+                ))}
+              </div>
+
+              {currentOrder.items.length > 0 && (
+                <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                  <h3 className="font-bold text-lg mb-3">Order Summary</h3>
+                  {currentOrder.items.map(item => (
+                    <div key={item.id} className="flex justify-between items-center py-2 border-b border-gray-200">
+                      <span className="font-medium">{item.name}</span>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => updateItemQuantity(item.id, -1)}
+                            className="bg-red-500 hover:bg-red-600 text-white p-1 rounded"
+                          >
+                            <Minus size={16} />
+                          </button>
+                          <span className="w-8 text-center font-bold">{item.quantity}</span>
+                          <button
+                            onClick={() => updateItemQuantity(item.id, 1)}
+                            className="bg-green-500 hover:bg-green-600 text-white p-1 rounded"
+                          >
+                            <Plus size={16} />
+                          </button>
+                        </div>
+                        <span className="font-bold w-20 text-right">₹{item.price * item.quantity}</span>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="flex justify-between items-center pt-4 mt-4 border-t-2 border-gray-300">
+                    <span className="font-bold text-xl">Total:</span>
+                    <span className="font-bold text-2xl text-green-700">
+                      ₹{calculateTotal(currentOrder.items)}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <textarea
+                placeholder="Special instructions..."
+                value={currentOrder.notes}
+                onChange={(e) => setCurrentOrder({ ...currentOrder, notes: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 mb-6"
+                rows="3"
+              />
+
+              <button
+                onClick={submitOrder}
+                className="w-full bg-green-700 hover:bg-green-800 text-white py-4 rounded-lg font-bold text-lg transition"
+              >
+                Place Order
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default OrderManagementSystem;
