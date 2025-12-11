@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management - Crafting Flavors with Class</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: #f5f5f5;
+        }
+
+        .navbar {
+            background: #2d5a3d;
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 600;
+            display: block;
+            font-size: 16px;
+        }
+
+        .user-role {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .logout-btn {
+            background: #d4a017;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: background 0.3s;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background: #b8890f;
+        }
+
+        .container {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+
+        .sidebar {
+            width: 240px;
+            background: white;
+            padding: 30px 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            margin: 0;
+        }
+
+        .sidebar-menu a {
+            display: block;
+            padding: 16px 30px;
+            color: #2c2c2c;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 16px;
+        }
+
+        .sidebar-menu a:hover {
+            background: #e8e5d8;
+        }
+
+        .sidebar-menu a.active {
+            background: #2d5a3d;
+            color: white;
+            border-left: 4px solid #d4a017;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            font-size: 36px;
+            color: #2c2c2c;
+            margin-bottom: 10px;
+        }
+
+        .page-header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #2d5a3d;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 11px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #2d5a3d;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #234a30;
+        }
+
+        .btn-secondary {
+            background: #d4a017;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #b8890f;
+        }
+
+        .btn-outline {
+            background: white;
+            color: #2d5a3d;
+            border: 2px solid #2d5a3d;
+        }
+
+        .btn-outline:hover {
+            background: #2d5a3d;
+            color: white;
+        }
+
+        .orders-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .orders-tabs {
+            display: flex;
+            border-bottom: 2px solid #f0f0f0;
+            background: #fafafa;
+        }
+
+        .tab {
+            padding: 16px 30px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab:hover {
+            color: #2d5a3d;
+        }
+
+        .tab.active {
+            color: #2d5a3d;
+            border-bottom-color: #2d5a3d;
+            background: white;
+        }
+
+        .orders-list {
+            padding: 20px;
+        }
+
+        .order-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .order-card:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-color: #2d5a3d;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .order-id {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d5a3d;
+        }
+
+        .order-status {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-incoming {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-preparing {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-ready {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-completed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .order-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            font-size: 14px;
+        }
+
+        .detail-label {
+            color: #666;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            color: #2c2c2c;
+            font-weight: 600;
+        }
+
+        .order-items {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .order-items h4 {
+            font-size: 14px;
+            color: #2d5a3d;
+            margin-bottom: 8px;
+        }
+
+        .item-list {
+            font-size: 14px;
+            color: #2c2c2c;
+            line-height: 1.6;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+            color: #2d5a3d;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c2c2c;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2d5a3d;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">Crafting Flavors with Class</div>
+        <div class="navbar-user">
+            <div class="user-info">
+                <span class="user-name">Manager Name</span>
+                <span class="user-role">Manager</span>
+            </div>
+            <button class="logout-btn">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <aside class="sidebar">
+            <ul class="sidebar-menu">
+                <li><a href="Dashboard.html">Dashboard</a></li>
+                <li><a href="OrderManagement.html" class="active">Order Management</a></li>
+                <li><a href="Inventory.html">Inventory</a></li>
+                <li><a href="Reports.html">Reports</a></li>
+                <li><a href="Discounts.html">Discounts</a></li>
+                <li><a href="Receipts.html">Receipts</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1>Order Management</h1>
+                <p>Manage incoming orders and track order status</p>
+            </div>
+
+            <div class="action-bar">
+                <div class="search-box">
+                    <input type="text" placeholder="Search orders by ID, customer name, or table number...">
+                </div>
+                <div class="filter-group">
+                    <button class="btn btn-outline">Filter</button>
+                    <button class="btn btn-secondary" onclick="openNewOrderModal()">+ New Order</button>
+                </div>
+            </div>
+
+            <div class="orders-container">
+                <div class="orders-tabs">
+                    <button class="tab active" onclick="showTab('incoming')">Incoming Orders (5)</button>
+                    <button class="tab" onclick="showTab('preparing')">Preparing (3)</button>
+                    <button class="tab" onclick="showTab('ready')">Ready (2)</button>
+                    <button class="tab" onclick="showTab('completed')">Completed (12)</button>
+                </div>
+
+                <div class="orders-list" id="ordersContent">
+                    <!-- Incoming Orders -->
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span class="order-id">Order #1234</span>
+                            <span class="order-status status-incoming">Incoming</span>
+                        </div>
+                        <div class="order-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Table</span>
+                                <span class="detail-value">Table 5</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Time</span>
+                                <span class="detail-value">2:30 PM</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Waiter</span>
+                                <span class="detail-value">John Doe</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Amount</span>
+                                <span class="detail-value">₹850</span>
+                            </div>
+                        </div>
+                        <div class="order-items">
+                            <h4>Order Items:</h4>
+                            <div class="item-list">
+                                • 2x Butter Chicken<br>
+                                • 1x Dal Makhani<br>
+                                • 3x Naan<br>
+                                • 2x Mango Lassi
+                            </div>
+                        </div>
+                        <div class="order-actions">
+                            <button class="btn btn-success btn-small">Accept Order</button>
+                            <button class="btn btn-primary btn-small">Modify</button>
+                            <button class="btn btn-danger btn-small">Reject</button>
+                        </div>
+                    </div>
+
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span class="order-id">Order #1235</span>
+                            <span class="order-status status-incoming">Incoming</span>
+                        </div>
+                        <div class="order-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Table</span>
+                                <span class="detail-value">Table 8</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Time</span>
+                                <span class="detail-value">2:35 PM</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Waiter</span>
+                                <span class="detail-value">Sarah Smith</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Amount</span>
+                                <span class="detail-value">₹1,200</span>
+                            </div>
+                        </div>
+                        <div class="order-items">
+                            <h4>Order Items:</h4>
+                            <div class="item-list">
+                                • 1x Paneer Tikka Masala<br>
+                                • 1x Biryani<br>
+                                • 2x Garlic Naan<br>
+                                • 1x Gulab Jamun
+                            </div>
+                        </div>
+                        <div class="order-actions">
+                            <button class="btn btn-success btn-small">Accept Order</button>
+                            <button class="btn btn-primary btn-small">Modify</button>
+                            <button class="btn btn-danger btn-small">Reject</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- New Order Modal -->
+    <div class="modal" id="newOrderModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Order</h2>
+                <button class="close-btn" onclick="closeNewOrderModal()">&times;</button>
+            </div>
+            <form onsubmit="handleNewOrder(event)">
+                <div class="form-group">
+                    <label>Table Number</label>
+                    <select required>
+                        <option value="">Select Table</option>
+                        <option value="1">Table 1</option>
+                        <option value="2">Table 2</option>
+                        <option value="3">Table 3</option>
+                        <option value="4">Table 4</option>
+                        <option value="5">Table 5</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Customer Name (Optional)</label>
+                    <input type="text" placeholder="Enter customer name">
+                </div>
+                <div class="form-group">
+                    <label>Waiter Name</label>
+                    <input type="text" placeholder="Enter waiter name" required>
+                </div>
+                <div class="form-group">
+                    <label>Order Items</label>
+                    <textarea placeholder="Enter order items (one per line)" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Special Instructions</label>
+                    <textarea placeholder="Any special instructions or requests"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Create Order</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tab) {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Here you would load different order data based on the tab
+            console.log('Showing tab:', tab);
+        }
+
+        function openNewOrderModal() {
+            document.getElementById('newOrderModal').classList.add('active');
+        }
+
+        function closeNewOrderModal() {
+            document.getElementById('newOrderModal').classList.remove('active');
+        }
+
+        function handleNewOrder(event) {
+            event.preventDefault();
+            alert('New order created successfully!');
+            closeNewOrderModal();
+            event.target.reset();
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('newOrderModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeNewOrderModal();
+            }
+        });
+    </script>
+</body>
+</html>
