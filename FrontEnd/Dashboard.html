@@ -189,7 +189,7 @@
 </head>
 <body>
     <nav class="navbar">
-        <div class="navbar-brand">Crafting Flavors with Class</div>
+        <div class="navbar-brand">Bhatt's Kitchen</div>
         <div class="navbar-user">
             <div class="user-info">
                 <span class="user-name">Loading...</span>
@@ -349,10 +349,9 @@
         const auth = new AuthManager();
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Authentication check disabled for direct access
-            // if (!auth.protectPage()) {
-            //     return;
-            // }
+            if (!auth.protectPage()) {
+                return;
+            }
 
             const user = auth.getCurrentUser();
             if (user) {
