@@ -392,6 +392,7 @@
             z-index: 1000;
             align-items: center;
             justify-content: center;
+            overflow-y: auto;
         }
 
         .modal.active {
@@ -402,10 +403,11 @@
             background: white;
             border-radius: 12px;
             padding: 30px;
-            max-width: 600px;
+            max-width: 700px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
+            margin: 20px;
         }
 
         .modal-header {
@@ -458,7 +460,7 @@
 
         .form-group textarea {
             resize: vertical;
-            min-height: 100px;
+            min-height: 60px;
         }
 
         .form-group input:focus,
@@ -466,6 +468,134 @@
         .form-group textarea:focus {
             outline: none;
             border-color: #2d5a3d;
+        }
+
+        .items-section {
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .items-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .items-header h3 {
+            font-size: 18px;
+            color: #2d5a3d;
+        }
+
+        .add-item-btn {
+            background: #2d5a3d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .add-item-btn:hover {
+            background: #234a30;
+        }
+
+        .item-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 12px;
+            background: #f9f9f9;
+            border-radius: 6px;
+        }
+
+        .remove-item-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .remove-item-btn:hover {
+            background: #c82333;
+        }
+
+        .order-summary {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        .summary-row.total {
+            font-weight: 600;
+            font-size: 18px;
+            padding-top: 10px;
+            border-top: 2px solid #ddd;
+            margin-top: 10px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .order-type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .type-dinein {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .type-takeaway {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .section-divider {
+            border-top: 2px solid #e0e0e0;
+            margin: 25px 0;
+            padding-top: 20px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d5a3d;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: #2d5a3d;
+            border-radius: 2px;
         }
     </style>
 </head>
@@ -545,23 +675,106 @@
                 <h2>Create New Order</h2>
                 <button class="close-btn" onclick="closeNewOrderModal()">&times;</button>
             </div>
-            <form onsubmit="handleNewOrder(event)">
+            <form id="newOrderForm">
+                <!-- Order Type Selection -->
                 <div class="form-group">
-                    <label>Table Number</label>
-                    <input type="number" required placeholder="Enter table number">
+                    <label>Order Type *</label>
+                    <select id="orderType" required onchange="toggleTableField()">
+                        <option value="">Select Order Type</option>
+                        <option value="Dine-in">🍽️ Dine-in</option>
+                        <option value="Takeaway">📦 Takeaway</option>
+                    </select>
                 </div>
+
+                <div class="section-divider">
+                    <div class="section-title">Customer Details</div>
+                </div>
+
+                <!-- Customer Details -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Customer Name *</label>
+                        <input type="text" id="customerName" required placeholder="Enter customer name">
+                    </div>
+                    <div class="form-group">
+                        <label>Customer Phone *</label>
+                        <input type="tel" id="customerPhone" required placeholder="10-digit mobile number" pattern="[0-9]{10}" maxlength="10">
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label>Customer ID</label>
-                    <input type="number" placeholder="Enter customer ID (optional)">
+                    <label>Customer Address</label>
+                    <textarea id="customerAddress" placeholder="Enter customer address (optional for dine-in, required for takeaway)" rows="2"></textarea>
                 </div>
+
                 <div class="form-group">
-                    <label>Waiter ID</label>
-                    <input type="number" required placeholder="Enter waiter ID">
+                    <label>Customer ID (Optional)</label>
+                    <input type="number" id="customerId" placeholder="Link to existing customer account">
                 </div>
+
+                <div class="section-divider">
+                    <div class="section-title">Order Details</div>
+                </div>
+
+                <!-- Table and Waiter -->
+                <div class="form-row">
+                    <div class="form-group" id="tableNumberGroup">
+                        <label>Table Number <span id="tableRequired">*</span></label>
+                        <input type="number" id="tableNumber" placeholder="Enter table number" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Waiter *</label>
+                        <select id="waiterSelect" required>
+                            <option value="">Select Waiter</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="items-section">
+                    <div class="items-header">
+                        <h3>Order Items *</h3>
+                        <button type="button" class="add-item-btn" onclick="addItemRow()">+ Add Item</button>
+                    </div>
+                    <div id="itemsContainer">
+                        <!-- Item rows will be added here -->
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tax Rate (%)</label>
+                        <input type="number" id="taxRate" value="9" step="0.01" min="0" max="100" onchange="calculateTotal()">
+                    </div>
+                    <div class="form-group">
+                        <label>Discount Amount (₹)</label>
+                        <input type="number" id="discountAmount" value="0" step="0.01" min="0" onchange="calculateTotal()">
+                    </div>
+                </div>
+
+                <div class="order-summary">
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span id="subtotalDisplay">₹0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tax:</span>
+                        <span id="taxDisplay">₹0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Discount:</span>
+                        <span id="discountDisplay">₹0.00</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total Amount:</span>
+                        <span id="totalDisplay">₹0.00</span>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label>Special Instructions</label>
-                    <textarea placeholder="Any special instructions or requests"></textarea>
+                    <textarea id="specialInstructions" placeholder="Any special instructions or requests"></textarea>
                 </div>
+
                 <button type="submit" class="btn btn-primary" style="width: 100%;">Create Order</button>
             </form>
         </div>
@@ -573,11 +786,15 @@
         let currentStatus = 'Incoming';
         let currentRejectOrderId = null;
         let orderCounts = {};
+        let menuItems = [];
+        let waiters = [];
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', () => {
             loadOrderCounts();
             setupSearch();
+            loadMenuItems();
+            loadWaiters();
             
             // Auto-refresh every 30 seconds
             setInterval(() => {
@@ -585,6 +802,64 @@
                 loadOrdersByStatus(currentStatus);
             }, 30000);
         });
+
+        // Toggle table field based on order type
+        function toggleTableField() {
+            const orderType = document.getElementById('orderType').value;
+            const tableInput = document.getElementById('tableNumber');
+            const tableRequired = document.getElementById('tableRequired');
+            const addressField = document.getElementById('customerAddress');
+            
+            if (orderType === 'Dine-in') {
+                tableInput.required = true;
+                tableRequired.style.display = 'inline';
+                addressField.placeholder = 'Enter customer address (optional for dine-in)';
+            } else if (orderType === 'Takeaway') {
+                tableInput.required = false;
+                tableRequired.style.display = 'none';
+                tableInput.value = '';
+                addressField.placeholder = 'Enter customer address (recommended for takeaway)';
+            }
+        }
+
+        // Load menu items for dropdown
+        async function loadMenuItems() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/menuitems`);
+                const result = await response.json();
+                if (result.success) {
+                    menuItems = result.data;
+                }
+            } catch (error) {
+                console.error('Error loading menu items:', error);
+            }
+        }
+
+        // Load waiters for dropdown
+        async function loadWaiters() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/waiters`);
+                const result = await response.json();
+                if (result.success) {
+                    waiters = result.data;
+                    populateWaiterDropdown();
+                }
+            } catch (error) {
+                console.error('Error loading waiters:', error);
+            }
+        }
+
+        // Populate waiter dropdown
+        function populateWaiterDropdown() {
+            const select = document.getElementById('waiterSelect');
+            select.innerHTML = '<option value="">Select Waiter</option>';
+            waiters.forEach(waiter => {
+                const option = document.createElement('option');
+                option.value = waiter.waiter_id;
+                option.textContent = `${waiter.staff_name} - ${waiter.table_section}`;
+                select.appendChild(option);
+            });
+        }
 
         // Setup search with debounce
         function setupSearch() {
@@ -603,6 +878,166 @@
                 }, 500);
             });
         }
+
+        // Add item row to the form
+        function addItemRow() {
+            const container = document.getElementById('itemsContainer');
+            const rowId = `item-${Date.now()}`;
+            
+            const row = document.createElement('div');
+            row.className = 'item-row';
+            row.id = rowId;
+            row.innerHTML = `
+                <select class="item-select" onchange="calculateTotal()" required>
+                    <option value="">Select Item</option>
+                    ${menuItems.map(item => `
+                        <option value="${item.menuId}" data-price="${item.price}">
+                            ${item.menuname} - ₹${item.price}
+                        </option>
+                    `).join('')}
+                </select>
+                <input type="number" class="item-quantity" min="1" value="1" placeholder="Qty" onchange="calculateTotal()" required>
+                <button type="button" class="remove-item-btn" onclick="removeItemRow('${rowId}')">✕</button>
+            `;
+            
+            container.appendChild(row);
+            calculateTotal();
+        }
+
+        // Remove item row
+        function removeItemRow(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.remove();
+                calculateTotal();
+            }
+        }
+
+        // Calculate total
+        function calculateTotal() {
+            const itemRows = document.querySelectorAll('.item-row');
+            let subtotal = 0;
+            
+            itemRows.forEach(row => {
+                const select = row.querySelector('.item-select');
+                const quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
+                
+                if (select.value) {
+                    const price = parseFloat(select.options[select.selectedIndex].dataset.price) || 0;
+                    subtotal += price * quantity;
+                }
+            });
+            
+            const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+            const discount = parseFloat(document.getElementById('discountAmount').value) || 0;
+            
+            const tax = subtotal * (taxRate / 100);
+            const total = subtotal + tax - discount;
+            
+            document.getElementById('subtotalDisplay').textContent = `₹${subtotal.toFixed(2)}`;
+            document.getElementById('taxDisplay').textContent = `₹${tax.toFixed(2)}`;
+            document.getElementById('discountDisplay').textContent = `₹${discount.toFixed(2)}`;
+            document.getElementById('totalDisplay').textContent = `₹${total.toFixed(2)}`;
+        }
+
+        // Open new order modal
+        function openNewOrderModal() {
+            document.getElementById('newOrderModal').classList.add('active');
+            // Add first item row by default
+            if (document.getElementById('itemsContainer').children.length === 0) {
+                addItemRow();
+            }
+        }
+
+        // Close new order modal
+        function closeNewOrderModal() {
+            document.getElementById('newOrderModal').classList.remove('active');
+            document.getElementById('newOrderForm').reset();
+            document.getElementById('itemsContainer').innerHTML = '';
+            calculateTotal();
+        }
+
+        // Handle new order form submission
+        document.getElementById('newOrderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Collect form data
+            const order_type = document.getElementById('orderType').value;
+            const customer_name = document.getElementById('customerName').value;
+            const customer_phone = document.getElementById('customerPhone').value;
+            const customer_address = document.getElementById('customerAddress').value || null;
+            const table_id = document.getElementById('tableNumber').value || null;
+            const waiter_id = document.getElementById('waiterSelect').value;
+            const customer_id = document.getElementById('customerId').value || null;
+            const special_instructions = document.getElementById('specialInstructions').value || null;
+            const tax_rate = parseFloat(document.getElementById('taxRate').value) / 100;
+            const discount_amount = parseFloat(document.getElementById('discountAmount').value) || 0;
+            
+            // Validate phone number
+            if (customer_phone.length !== 10 || !/^[0-9]{10}$/.test(customer_phone)) {
+                alert('Please enter a valid 10-digit phone number');
+                return;
+            }
+            
+            // Collect items
+            const itemRows = document.querySelectorAll('.item-row');
+            const items = [];
+            
+            itemRows.forEach(row => {
+                const select = row.querySelector('.item-select');
+                const quantity = parseInt(row.querySelector('.item-quantity').value);
+                
+                if (select.value && quantity > 0) {
+                    items.push({
+                        menu_id: parseInt(select.value),
+                        quantity: quantity
+                    });
+                }
+            });
+            
+            if (items.length === 0) {
+                alert('Please add at least one item to the order');
+                return;
+            }
+            
+            // Create order
+            try {
+                const response = await fetch(`${API_BASE_URL}/orders/create-with-items`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        order_type,
+                        customer_name,
+                        customer_phone,
+                        customer_address,
+                        customer_id,
+                        table_id: table_id ? parseInt(table_id) : null,
+                        waiter_id: parseInt(waiter_id),
+                        items,
+                        tax_rate,
+                        discount_amount,
+                        special_instructions,
+                        created_by: 'Admin'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(`${order_type} Order #${result.data.order_id} created successfully!\nCustomer: ${customer_name}\nTotal: ₹${result.data.final_amount}`);
+                    closeNewOrderModal();
+                    loadOrderCounts();
+                    loadOrdersByStatus(currentStatus);
+                } else {
+                    alert('Error creating order: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error creating order:', error);
+                alert('Error creating order. Please try again.');
+            }
+        });
 
         // Load order counts for tabs
         async function loadOrderCounts() {
@@ -680,10 +1115,6 @@
                         // Fetch order items for each order
                         const ordersWithItems = await Promise.all(
                             result.data.map(async (order) => {
-                                const itemsResponse = await fetch(`${API_BASE_URL}/orders/${order.order_id}`);
-                                const itemsResult = await itemsResponse.json();
-                                
-                                // Fetch items from order_items table
                                 const orderItemsResponse = await fetch(`${API_BASE_URL}/orders/${order.order_id}/details`);
                                 let orderItems = [];
                                 
@@ -720,7 +1151,6 @@
             container.innerHTML = '<div class="loading">Searching...</div>';
 
             try {
-                // Search across all orders and filter by query
                 const response = await fetch(`${API_BASE_URL}/orders`);
                 const result = await response.json();
 
@@ -729,7 +1159,7 @@
                     const filteredOrders = result.data.filter(order => 
                         order.order_id.toString().includes(searchLower) ||
                         (order.customer_name && order.customer_name.toLowerCase().includes(searchLower)) ||
-                        order.table_id.toString().includes(searchLower)
+                        (order.table_id && order.table_id.toString().includes(searchLower))
                     );
 
                     if (filteredOrders.length === 0) {
@@ -740,7 +1170,6 @@
                             </div>
                         `;
                     } else {
-                        // Fetch items for filtered orders
                         const ordersWithItems = await Promise.all(
                             filteredOrders.map(async (order) => {
                                 const orderItemsResponse = await fetch(`${API_BASE_URL}/orders/${order.order_id}/details`);
@@ -785,17 +1214,36 @@
                 ? order.order_items.map(item => `• ${item}`).join('<br>')
                 : '• No items found';
             
+            // Order type badge
+            const orderTypeBadge = order.order_type 
+                ? `<span class="order-type-badge type-${order.order_type.toLowerCase().replace('-', '')}">${order.order_type}</span>`
+                : '';
+            
             return `
                 <div class="order-card">
                     <div class="order-header">
-                        <span class="order-id">Order #${order.order_id}</span>
+                        <span class="order-id">Order #${order.order_id}${orderTypeBadge}</span>
                         <span class="order-status ${statusClass}">${order.order_status}</span>
                     </div>
                     <div class="order-details">
-                        <div class="detail-item">
-                            <span class="detail-label">Table</span>
-                            <span class="detail-value">Table ${order.table_id}</span>
-                        </div>
+                        ${order.customer_name ? `
+                            <div class="detail-item">
+                                <span class="detail-label">Customer</span>
+                                <span class="detail-value">${order.customer_name}</span>
+                            </div>
+                        ` : ''}
+                        ${order.customer_phone ? `
+                            <div class="detail-item">
+                                <span class="detail-label">Phone</span>
+                                <span class="detail-value">${order.customer_phone}</span>
+                            </div>
+                        ` : ''}
+                        ${order.table_id ? `
+                            <div class="detail-item">
+                                <span class="detail-label">Table</span>
+                                <span class="detail-value">Table ${order.table_id}</span>
+                            </div>
+                        ` : ''}
                         <div class="detail-item">
                             <span class="detail-label">Time</span>
                             <span class="detail-value">${time}</span>
@@ -809,6 +1257,12 @@
                             <span class="detail-value">₹${order.final_amount}</span>
                         </div>
                     </div>
+                    ${order.customer_address ? `
+                        <div class="detail-item" style="margin: 12px 0;">
+                            <span class="detail-label">Address</span>
+                            <span class="detail-value" style="font-weight: 400;">${order.customer_address}</span>
+                        </div>
+                    ` : ''}
                     <div class="order-items">
                         <h4>Order Items:</h4>
                         <div class="item-list">
@@ -874,24 +1328,40 @@
         // Update order status
         async function updateOrderStatus(orderId, newStatus) {
             try {
+                // First fetch the order to get its current data
+                const orderResponse = await fetch(`${API_BASE_URL}/orders/${orderId}`);
+                const orderResult = await orderResponse.json();
+                
+                if (!orderResult.success) {
+                    alert('Error fetching order details');
+                    return;
+                }
+                
+                const order = orderResult.data;
+                
+                // Now update with the new status
                 const response = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
+                        customer_id: order.customer_id,
+                        customer_name: order.customer_name,
+                        customer_phone: order.customer_phone,
+                        customer_address: order.customer_address,
+                        table_id: order.table_id,
+                        waiter_id: order.waiter_id,
+                        total_amount: order.total_amount,
+                        tax_amount: order.tax_amount,
+                        discount_amount: order.discount_amount,
+                        final_amount: order.final_amount,
                         order_status: newStatus,
-                        customer_id: 1, // These should be fetched from the order
-                        table_id: 1,
-                        waiter_id: 1,
-                        total_amount: 0,
-                        tax_amount: 0,
-                        discount_amount: 0,
-                        final_amount: 0,
-                        payment_status: 'Unpaid',
-                        payment_method: null,
-                        special_instructions: null,
-                        is_active: 1,
+                        order_type: order.order_type,
+                        payment_status: order.payment_status,
+                        payment_method: order.payment_method,
+                        special_instructions: order.special_instructions,
+                        is_active: order.is_active,
                         modified_by: 'Admin'
                     })
                 });
@@ -931,9 +1401,7 @@
             const reason = document.getElementById('rejectionReason').value;
             
             try {
-                // For now, we'll just update the status to a cancelled/rejected state
-                // You may need to add a 'Cancelled' status to your database
-                await updateOrderStatus(currentRejectOrderId, 'Completed'); // Using Completed as placeholder
+                await updateOrderStatus(currentRejectOrderId, 'Completed');
                 
                 alert(`Order #${currentRejectOrderId} rejected: ${reason}`);
                 closeRejectModal();
@@ -948,23 +1416,6 @@
         // Modify order (placeholder)
         function modifyOrder(orderId) {
             alert(`Modify order #${orderId} - This feature will open a modal to edit order items`);
-        }
-
-        // Open new order modal
-        function openNewOrderModal() {
-            document.getElementById('newOrderModal').classList.add('active');
-        }
-
-        // Close new order modal
-        function closeNewOrderModal() {
-            document.getElementById('newOrderModal').classList.remove('active');
-        }
-
-        // Handle new order form
-        function handleNewOrder(event) {
-            event.preventDefault();
-            alert('New order creation - This feature needs to be fully implemented with your backend');
-            closeNewOrderModal();
         }
 
         // Close modals when clicking outside

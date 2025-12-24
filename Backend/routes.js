@@ -996,10 +996,15 @@ router.delete('/menuitems/:id', async (req, res) => {
 // ==================== ORDERS APIs ====================
 
 // 1. GET - Get all orders
+// 1. Fix GET /orders endpoint (around line 1030)
 router.get('/orders', async (req, res) => {
     try {
         const [rows] = await db.query(`
-            SELECT o.*, u.user_name as customer_name, w.waiter_id, 
+            SELECT o.*, 
+                   COALESCE(o.customer_name, u.user_name) as customer_name,
+                   o.customer_phone,
+                   o.customer_address,
+                   w.waiter_id, 
                    s.staff_name as waiter_name
             FROM orders o
             LEFT JOIN users u ON o.customer_id = u.user_id
@@ -1022,15 +1027,16 @@ router.get('/orders', async (req, res) => {
     }
 });
 
-// 2. GET - Get order details with items (MUST BE BEFORE /orders/:id)
+// 2. Fix GET /orders/:id/details endpoint (around line 1055)
 router.get('/orders/:id/details', async (req, res) => {
     try {
         // Get order details
         const [orders] = await db.query(`
             SELECT 
                 o.*,
-                u.user_name as customer_name,
-                u.u_phone as customer_phone,
+                COALESCE(o.customer_name, u.user_name) as customer_name,
+                COALESCE(o.customer_phone, u.u_phone) as customer_phone,
+                o.customer_address,
                 s.staff_name as waiter_name,
                 w.waiter_id
             FROM orders o
@@ -1077,11 +1083,15 @@ router.get('/orders/:id/details', async (req, res) => {
     }
 });
 
-// 3. GET - Get single order by ID (MUST BE AFTER /orders/:id/details)
+// 3. Fix GET /orders/:id endpoint (around line 1095)
 router.get('/orders/:id', async (req, res) => {
     try {
         const [rows] = await db.query(`
-            SELECT o.*, u.user_name as customer_name, w.waiter_id, 
+            SELECT o.*, 
+                   COALESCE(o.customer_name, u.user_name) as customer_name,
+                   o.customer_phone,
+                   o.customer_address,
+                   w.waiter_id, 
                    s.staff_name as waiter_name
             FROM orders o
             LEFT JOIN users u ON o.customer_id = u.user_id
@@ -1110,44 +1120,15 @@ router.get('/orders/:id', async (req, res) => {
     }
 });
 
-// // 2. GET - Get single order by ID
-// router.get('/orders/:id', async (req, res) => {
-//     try {
-//         const [rows] = await db.query(`
-//             SELECT o.*, u.user_name as customer_name, w.waiter_id, 
-//                    s.staff_name as waiter_name
-//             FROM orders o
-//             LEFT JOIN users u ON o.customer_id = u.user_id
-//             LEFT JOIN waiters w ON o.waiter_id = w.waiter_id
-//             LEFT JOIN staff s ON w.staff_id = s.staff_id
-//             WHERE o.order_id = ? AND o.is_deleted = 0
-//         `, [req.params.id]);
-        
-//         if (rows.length === 0) {
-//             return res.status(404).json({
-//                 success: false,
-//                 message: 'Order not found'
-//             });
-//         }
-        
-//         res.json({
-//             success: true,
-//             data: rows[0]
-//         });
-//     } catch (error) {
-//         res.status(500).json({
-//             success: false,
-//             message: 'Error fetching order',
-//             error: error.message
-//         });
-//     }
-// });
-
-// 3. GET - Get orders by customer
+// 4. Fix GET /orders/customer/:customerId
 router.get('/orders/customer/:customerId', async (req, res) => {
     try {
         const [rows] = await db.query(`
-            SELECT o.*, u.user_name as customer_name, w.waiter_id, 
+            SELECT o.*, 
+                   COALESCE(o.customer_name, u.user_name) as customer_name,
+                   o.customer_phone,
+                   o.customer_address,
+                   w.waiter_id, 
                    s.staff_name as waiter_name
             FROM orders o
             LEFT JOIN users u ON o.customer_id = u.user_id
@@ -1170,11 +1151,15 @@ router.get('/orders/customer/:customerId', async (req, res) => {
     }
 });
 
-// 4. GET - Get orders by waiter
+// 5. Fix GET /orders/waiter/:waiterId
 router.get('/orders/waiter/:waiterId', async (req, res) => {
     try {
         const [rows] = await db.query(`
-            SELECT o.*, u.user_name as customer_name, w.waiter_id, 
+            SELECT o.*, 
+                   COALESCE(o.customer_name, u.user_name) as customer_name,
+                   o.customer_phone,
+                   o.customer_address,
+                   w.waiter_id, 
                    s.staff_name as waiter_name
             FROM orders o
             LEFT JOIN users u ON o.customer_id = u.user_id
@@ -1197,11 +1182,15 @@ router.get('/orders/waiter/:waiterId', async (req, res) => {
     }
 });
 
-// 5. GET - Get orders by order status
+// 6. Fix GET /orders/orderstatus/:status
 router.get('/orders/orderstatus/:status', async (req, res) => {
     try {
         const [rows] = await db.query(`
-            SELECT o.*, u.user_name as customer_name, w.waiter_id, 
+            SELECT o.*, 
+                   COALESCE(o.customer_name, u.user_name) as customer_name,
+                   o.customer_phone,
+                   o.customer_address,
+                   w.waiter_id, 
                    s.staff_name as waiter_name
             FROM orders o
             LEFT JOIN users u ON o.customer_id = u.user_id
@@ -1224,11 +1213,15 @@ router.get('/orders/orderstatus/:status', async (req, res) => {
     }
 });
 
-// 6. GET - Get orders by payment status
+// 7. Fix GET /orders/paymentstatus/:status
 router.get('/orders/paymentstatus/:status', async (req, res) => {
     try {
         const [rows] = await db.query(`
-            SELECT o.*, u.user_name as customer_name, w.waiter_id, 
+            SELECT o.*, 
+                   COALESCE(o.customer_name, u.user_name) as customer_name,
+                   o.customer_phone,
+                   o.customer_address,
+                   w.waiter_id, 
                    s.staff_name as waiter_name
             FROM orders o
             LEFT JOIN users u ON o.customer_id = u.user_id
@@ -1251,11 +1244,15 @@ router.get('/orders/paymentstatus/:status', async (req, res) => {
     }
 });
 
-// 7. GET - Get orders by date
+// 8. Fix GET /orders/date/:date
 router.get('/orders/date/:date', async (req, res) => {
     try {
         const [rows] = await db.query(`
-            SELECT o.*, u.user_name as customer_name, w.waiter_id, 
+            SELECT o.*, 
+                   COALESCE(o.customer_name, u.user_name) as customer_name,
+                   o.customer_phone,
+                   o.customer_address,
+                   w.waiter_id, 
                    s.staff_name as waiter_name
             FROM orders o
             LEFT JOIN users u ON o.customer_id = u.user_id
@@ -1278,11 +1275,15 @@ router.get('/orders/date/:date', async (req, res) => {
     }
 });
 
-// 8. GET - Get orders by table
+// 9. Fix GET /orders/table/:tableId
 router.get('/orders/table/:tableId', async (req, res) => {
     try {
         const [rows] = await db.query(`
-            SELECT o.*, u.user_name as customer_name, w.waiter_id, 
+            SELECT o.*, 
+                   COALESCE(o.customer_name, u.user_name) as customer_name,
+                   o.customer_phone,
+                   o.customer_address,
+                   w.waiter_id, 
                    s.staff_name as waiter_name
             FROM orders o
             LEFT JOIN users u ON o.customer_id = u.user_id
@@ -1349,17 +1350,69 @@ router.post('/orders', async (req, res) => {
 });
 
 // 10. PUT - Update existing order
+// router.put('/orders/:id', async (req, res) => {
+//     try {
+//         const { 
+//             customer_id, 
+//             table_id, 
+//             waiter_id, 
+//             total_amount, 
+//             tax_amount, 
+//             discount_amount, 
+//             final_amount, 
+//             order_status, 
+//             payment_status, 
+//             payment_method, 
+//             special_instructions, 
+//             is_active, 
+//             modified_by 
+//         } = req.body;
+        
+//         const [result] = await db.query(
+//             `UPDATE orders SET customer_id = ?, table_id = ?, waiter_id = ?, total_amount = ?, 
+//              tax_amount = ?, discount_amount = ?, final_amount = ?, order_status = ?, 
+//              payment_status = ?, payment_method = ?, special_instructions = ?, is_active = ?, 
+//              modified_by = ?, modified_on = CURRENT_TIMESTAMP WHERE order_id = ?`,
+//             [customer_id, table_id, waiter_id, total_amount, tax_amount, discount_amount, 
+//              final_amount, order_status, payment_status, payment_method, special_instructions, 
+//              is_active, modified_by, req.params.id]
+//         );
+        
+//         if (result.affectedRows === 0) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: 'Order not found'
+//             });
+//         }
+        
+//         res.json({
+//             success: true,
+//             message: 'Order updated successfully'
+//         });
+//     } catch (error) {
+//         res.status(500).json({
+//             success: false,
+//             message: 'Error updating order',
+//             error: error.message
+//         });
+//     }
+// });
+
 router.put('/orders/:id', async (req, res) => {
     try {
         const { 
-            customer_id, 
+            customer_id,
+            customer_name,      // NEW
+            customer_phone,     // NEW  
+            customer_address,   // NEW
             table_id, 
             waiter_id, 
             total_amount, 
             tax_amount, 
             discount_amount, 
             final_amount, 
-            order_status, 
+            order_status,
+            order_type,         // NEW
             payment_status, 
             payment_method, 
             special_instructions, 
@@ -1368,13 +1421,19 @@ router.put('/orders/:id', async (req, res) => {
         } = req.body;
         
         const [result] = await db.query(
-            `UPDATE orders SET customer_id = ?, table_id = ?, waiter_id = ?, total_amount = ?, 
-             tax_amount = ?, discount_amount = ?, final_amount = ?, order_status = ?, 
-             payment_status = ?, payment_method = ?, special_instructions = ?, is_active = ?, 
-             modified_by = ?, modified_on = CURRENT_TIMESTAMP WHERE order_id = ?`,
-            [customer_id, table_id, waiter_id, total_amount, tax_amount, discount_amount, 
-             final_amount, order_status, payment_status, payment_method, special_instructions, 
-             is_active, modified_by, req.params.id]
+            `UPDATE orders SET 
+             customer_id = ?, customer_name = ?, customer_phone = ?, customer_address = ?,
+             table_id = ?, waiter_id = ?, total_amount = ?, 
+             tax_amount = ?, discount_amount = ?, final_amount = ?, order_status = ?,
+             order_type = ?, payment_status = ?, payment_method = ?, special_instructions = ?, is_active = ?, 
+             modified_by = ?, modified_on = CURRENT_TIMESTAMP 
+             WHERE order_id = ?`,
+            [
+                customer_id, customer_name, customer_phone, customer_address,
+                table_id, waiter_id, total_amount, tax_amount, discount_amount, 
+                final_amount, order_status, order_type, payment_status, payment_method, special_instructions, 
+                is_active, modified_by, req.params.id
+            ]
         );
         
         if (result.affectedRows === 0) {
@@ -1480,6 +1539,312 @@ router.get('/orders/:id/details', async (req, res) => {
     }
 });
 
+// POST - Create new order with items (ENHANCED VERSION)
+// router.post('/orders/create-with-items', async (req, res) => {
+//     const connection = await db.getConnection();
+    
+//     try {
+//         await connection.beginTransaction();
+        
+//         const { 
+//             customer_id, 
+//             table_id, 
+//             waiter_id, 
+//             items, // Array of {menu_id, quantity}
+//             tax_rate,
+//             discount_amount,
+//             special_instructions,
+//             created_by 
+//         } = req.body;
+        
+//         // Validate required fields
+//         if (!table_id || !waiter_id || !items || items.length === 0) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: 'Table ID, Waiter ID, and at least one item are required'
+//             });
+//         }
+        
+//         // Fetch menu item prices
+//         let total_amount = 0;
+//         const itemsWithPrices = [];
+        
+//         for (const item of items) {
+//             const [menuItem] = await connection.query(
+//                 'SELECT menuId, menuname, price FROM menuitems WHERE menuId = ? AND is_deleted = 0',
+//                 [item.menu_id]
+//             );
+            
+//             if (menuItem.length === 0) {
+//                 await connection.rollback();
+//                 return res.status(404).json({
+//                     success: false,
+//                     message: `Menu item with ID ${item.menu_id} not found`
+//                 });
+//             }
+            
+//             const price = parseFloat(menuItem[0].price);
+//             const quantity = parseInt(item.quantity);
+//             const subtotal = price * quantity;
+//             total_amount += subtotal;
+            
+//             itemsWithPrices.push({
+//                 menu_id: item.menu_id,
+//                 menuname: menuItem[0].menuname,
+//                 quantity: quantity,
+//                 item_price: price,
+//                 subtotal: subtotal,
+//                 special_notes: item.special_notes || null
+//             });
+//         }
+        
+//         // Calculate tax and final amount
+//         const tax_amount = total_amount * (tax_rate || 0.09); // Default 9% tax
+//         const discount = parseFloat(discount_amount || 0);
+//         const final_amount = total_amount + tax_amount - discount;
+        
+//         // Insert order
+//         const [orderResult] = await connection.query(
+//             `INSERT INTO orders (
+//                 customer_id, table_id, waiter_id, 
+//                 total_amount, tax_amount, discount_amount, final_amount, 
+//                 order_status, payment_status, special_instructions, 
+//                 is_active, created_by, modified_by
+//             ) VALUES (?, ?, ?, ?, ?, ?, ?, 'Incoming', 'Unpaid', ?, 1, ?, ?)`,
+//             [
+//                 customer_id || null, 
+//                 table_id, 
+//                 waiter_id, 
+//                 total_amount.toFixed(2), 
+//                 tax_amount.toFixed(2), 
+//                 discount.toFixed(2), 
+//                 final_amount.toFixed(2), 
+//                 special_instructions || null, 
+//                 created_by || 'System', 
+//                 created_by || 'System'
+//             ]
+//         );
+        
+//         const order_id = orderResult.insertId;
+        
+//         // Insert order items
+//         for (const item of itemsWithPrices) {
+//             await connection.query(
+//                 `INSERT INTO order_items (
+//                     order_id, menu_id, quantity, item_price, subtotal, 
+//                     special_notes, created_by, modified_by
+//                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+//                 [
+//                     order_id, 
+//                     item.menu_id, 
+//                     item.quantity, 
+//                     item.item_price, 
+//                     item.subtotal, 
+//                     item.special_notes, 
+//                     created_by || 'System', 
+//                     created_by || 'System'
+//                 ]
+//             );
+//         }
+        
+//         await connection.commit();
+        
+//         res.status(201).json({
+//             success: true,
+//             message: 'Order created successfully',
+//             data: {
+//                 order_id: order_id,
+//                 table_id: table_id,
+//                 total_amount: total_amount.toFixed(2),
+//                 tax_amount: tax_amount.toFixed(2),
+//                 discount_amount: discount.toFixed(2),
+//                 final_amount: final_amount.toFixed(2),
+//                 items: itemsWithPrices
+//             }
+//         });
+        
+//     } catch (error) {
+//         await connection.rollback();
+//         console.error('Error creating order:', error);
+//         res.status(500).json({
+//             success: false,
+//             message: 'Error creating order',
+//             error: error.message
+//         });
+//     } finally {
+//         connection.release();
+//     }
+// });
+
+router.post('/orders/create-with-items', async (req, res) => {
+    const connection = await db.getConnection();
+    
+    try {
+        await connection.beginTransaction();
+        
+        const { 
+            customer_id,
+            customer_name,      // NEW
+            customer_phone,     // NEW
+            customer_address,   // NEW
+            order_type,         // NEW (Dine-in or Takeaway)
+            table_id, 
+            waiter_id, 
+            items,
+            tax_rate,
+            discount_amount,
+            special_instructions,
+            created_by 
+        } = req.body;
+        
+        // Validate required fields
+        if (!customer_name || !customer_phone) {
+            return res.status(400).json({
+                success: false,
+                message: 'Customer name and phone number are required'
+            });
+        }
+        
+        if (!order_type || !['Dine-in', 'Takeaway'].includes(order_type)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Order type must be either "Dine-in" or "Takeaway"'
+            });
+        }
+        
+        // Table is required for Dine-in, optional for Takeaway
+        if (order_type === 'Dine-in' && !table_id) {
+            return res.status(400).json({
+                success: false,
+                message: 'Table number is required for Dine-in orders'
+            });
+        }
+        
+        if (!waiter_id || !items || items.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Waiter and at least one item are required'
+            });
+        }
+        
+        // Fetch menu item prices
+        let total_amount = 0;
+        const itemsWithPrices = [];
+        
+        for (const item of items) {
+            const [menuItem] = await connection.query(
+                'SELECT menuId, menuname, price FROM menuitems WHERE menuId = ? AND is_deleted = 0',
+                [item.menu_id]
+            );
+            
+            if (menuItem.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({
+                    success: false,
+                    message: `Menu item with ID ${item.menu_id} not found`
+                });
+            }
+            
+            const price = parseFloat(menuItem[0].price);
+            const quantity = parseInt(item.quantity);
+            const subtotal = price * quantity;
+            total_amount += subtotal;
+            
+            itemsWithPrices.push({
+                menu_id: item.menu_id,
+                menuname: menuItem[0].menuname,
+                quantity: quantity,
+                item_price: price,
+                subtotal: subtotal,
+                special_notes: item.special_notes || null
+            });
+        }
+        
+        // Calculate tax and final amount
+        const tax_amount = total_amount * (tax_rate || 0.09);
+        const discount = parseFloat(discount_amount || 0);
+        const final_amount = total_amount + tax_amount - discount;
+        
+        // Insert order with customer details
+        const [orderResult] = await connection.query(
+            `INSERT INTO orders (
+                customer_id, customer_name, customer_phone, customer_address,
+                table_id, waiter_id, 
+                total_amount, tax_amount, discount_amount, final_amount, 
+                order_status, order_type, payment_status, special_instructions, 
+                is_active, created_by, modified_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Incoming', ?, 'Unpaid', ?, 1, ?, ?)`,
+            [
+                customer_id || null,
+                customer_name,
+                customer_phone,
+                customer_address || null,
+                order_type === 'Dine-in' ? table_id : null,
+                waiter_id, 
+                total_amount.toFixed(2), 
+                tax_amount.toFixed(2), 
+                discount.toFixed(2), 
+                final_amount.toFixed(2),
+                order_type,
+                special_instructions || null, 
+                created_by || 'System', 
+                created_by || 'System'
+            ]
+        );
+        
+        const order_id = orderResult.insertId;
+        
+        // Insert order items
+        for (const item of itemsWithPrices) {
+            await connection.query(
+                `INSERT INTO order_items (
+                    order_id, menu_id, quantity, item_price, subtotal, 
+                    special_notes, created_by, modified_by
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    order_id, 
+                    item.menu_id, 
+                    item.quantity, 
+                    item.item_price, 
+                    item.subtotal, 
+                    item.special_notes, 
+                    created_by || 'System', 
+                    created_by || 'System'
+                ]
+            );
+        }
+        
+        await connection.commit();
+        
+        res.status(201).json({
+            success: true,
+            message: `${order_type} order created successfully`,
+            data: {
+                order_id: order_id,
+                customer_name: customer_name,
+                customer_phone: customer_phone,
+                order_type: order_type,
+                table_id: table_id,
+                total_amount: total_amount.toFixed(2),
+                tax_amount: tax_amount.toFixed(2),
+                discount_amount: discount.toFixed(2),
+                final_amount: final_amount.toFixed(2),
+                items: itemsWithPrices
+            }
+        });
+        
+    } catch (error) {
+        await connection.rollback();
+        console.error('Error creating order:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error creating order',
+            error: error.message
+        });
+    } finally {
+        connection.release();
+    }
+});
 
 // ==================== ANALYTICS & REPORTS APIs ====================
 
