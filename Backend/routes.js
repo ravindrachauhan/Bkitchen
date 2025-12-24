@@ -1022,7 +1022,62 @@ router.get('/orders', async (req, res) => {
     }
 });
 
-// 2. GET - Get single order by ID
+// 2. GET - Get order details with items (MUST BE BEFORE /orders/:id)
+router.get('/orders/:id/details', async (req, res) => {
+    try {
+        // Get order details
+        const [orders] = await db.query(`
+            SELECT 
+                o.*,
+                u.user_name as customer_name,
+                u.u_phone as customer_phone,
+                s.staff_name as waiter_name,
+                w.waiter_id
+            FROM orders o
+            LEFT JOIN users u ON o.customer_id = u.user_id
+            LEFT JOIN waiters w ON o.waiter_id = w.waiter_id
+            LEFT JOIN staff s ON w.staff_id = s.staff_id
+            WHERE o.order_id = ? AND o.is_deleted = 0
+        `, [req.params.id]);
+        
+        if (orders.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+        
+        // Get order items
+        const [items] = await db.query(`
+            SELECT 
+                oi.*,
+                m.menuname,
+                m.description,
+                c.categoryname
+            FROM order_items oi
+            LEFT JOIN menuitems m ON oi.menu_id = m.menuId
+            LEFT JOIN category c ON m.categoryId = c.categoryId
+            WHERE oi.order_id = ? AND oi.is_deleted = 0
+            ORDER BY oi.order_item_id
+        `, [req.params.id]);
+        
+        res.json({
+            success: true,
+            data: {
+                ...orders[0],
+                items: items
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching order details',
+            error: error.message
+        });
+    }
+});
+
+// 3. GET - Get single order by ID (MUST BE AFTER /orders/:id/details)
 router.get('/orders/:id', async (req, res) => {
     try {
         const [rows] = await db.query(`
@@ -1054,6 +1109,39 @@ router.get('/orders/:id', async (req, res) => {
         });
     }
 });
+
+// // 2. GET - Get single order by ID
+// router.get('/orders/:id', async (req, res) => {
+//     try {
+//         const [rows] = await db.query(`
+//             SELECT o.*, u.user_name as customer_name, w.waiter_id, 
+//                    s.staff_name as waiter_name
+//             FROM orders o
+//             LEFT JOIN users u ON o.customer_id = u.user_id
+//             LEFT JOIN waiters w ON o.waiter_id = w.waiter_id
+//             LEFT JOIN staff s ON w.staff_id = s.staff_id
+//             WHERE o.order_id = ? AND o.is_deleted = 0
+//         `, [req.params.id]);
+        
+//         if (rows.length === 0) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: 'Order not found'
+//             });
+//         }
+        
+//         res.json({
+//             success: true,
+//             data: rows[0]
+//         });
+//     } catch (error) {
+//         res.status(500).json({
+//             success: false,
+//             message: 'Error fetching order',
+//             error: error.message
+//         });
+//     }
+// });
 
 // 3. GET - Get orders by customer
 router.get('/orders/customer/:customerId', async (req, res) => {
@@ -1336,6 +1424,62 @@ router.delete('/orders/:id', async (req, res) => {
         });
     }
 });
+
+// 12. GET - Get order details with items
+router.get('/orders/:id/details', async (req, res) => {
+    try {
+        // Get order details
+        const [orders] = await db.query(`
+            SELECT 
+                o.*,
+                u.user_name as customer_name,
+                u.u_phone as customer_phone,
+                s.staff_name as waiter_name,
+                w.waiter_id
+            FROM orders o
+            LEFT JOIN users u ON o.customer_id = u.user_id
+            LEFT JOIN waiters w ON o.waiter_id = w.waiter_id
+            LEFT JOIN staff s ON w.staff_id = s.staff_id
+            WHERE o.order_id = ? AND o.is_deleted = 0
+        `, [req.params.id]);
+        
+        if (orders.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+        
+        // Get order items
+        const [items] = await db.query(`
+            SELECT 
+                oi.*,
+                m.menuname,
+                m.description,
+                c.categoryname
+            FROM order_items oi
+            LEFT JOIN menuitems m ON oi.menu_id = m.menuId
+            LEFT JOIN category c ON m.categoryId = c.categoryId
+            WHERE oi.order_id = ? AND oi.is_deleted = 0
+            ORDER BY oi.order_item_id
+        `, [req.params.id]);
+        
+        res.json({
+            success: true,
+            data: {
+                ...orders[0],
+                items: items
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching order details',
+            error: error.message
+        });
+    }
+});
+
 
 // ==================== ANALYTICS & REPORTS APIs ====================
 

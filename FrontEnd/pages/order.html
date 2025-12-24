@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title> Order Management -  Bhatt's Kitchen </title>
+    <title>Order Management - Bhatt's Kitchen</title>
     <style>
         * {
             margin: 0;
@@ -370,11 +370,15 @@
             color: #999;
         }
 
-        .empty-state svg {
-            width: 80px;
-            height: 80px;
+        .empty-state-icon {
+            font-size: 48px;
             margin-bottom: 20px;
-            opacity: 0.3;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
         }
 
         .modal {
@@ -467,7 +471,7 @@
 </head>
 <body>
     <nav class="navbar">
-        <div class="navbar-brand"> Bhatt's Kitchen</div>
+        <div class="navbar-brand">Bhatt's Kitchen</div>
         <div class="navbar-user">
             <div class="user-info">
                 <span class="user-name">Manager Name</span>
@@ -497,7 +501,7 @@
 
             <div class="action-bar">
                 <div class="search-box">
-                    <input type="text" placeholder="Search orders by ID, customer name, or table number...">
+                    <input type="text" id="searchInput" placeholder="Search orders by ID, customer name, or table number...">
                 </div>
                 <div class="filter-group">
                     <button class="btn btn-outline">Filter</button>
@@ -506,95 +510,32 @@
             </div>
 
             <div class="orders-container">
-                <div class="orders-tabs">
-                    <button class="tab active" onclick="showTab('incoming')">Incoming Orders (5)</button>
-                    <button class="tab" onclick="showTab('preparing')">Preparing (3)</button>
-                    <button class="tab" onclick="showTab('ready')">Ready (2)</button>
-                    <button class="tab" onclick="showTab('completed')">Completed (12)</button>
+                <div class="orders-tabs" id="tabsContainer">
+                    <!-- Tabs will be dynamically populated -->
                 </div>
 
                 <div class="orders-list" id="ordersContent">
-                    <!-- Incoming Orders -->
-                    <div class="order-card">
-                        <div class="order-header">
-                            <span class="order-id">Order #1234</span>
-                            <span class="order-status status-incoming">Incoming</span>
-                        </div>
-                        <div class="order-details">
-                            <div class="detail-item">
-                                <span class="detail-label">Table</span>
-                                <span class="detail-value">Table 5</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Time</span>
-                                <span class="detail-value">2:30 PM</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Waiter</span>
-                                <span class="detail-value">John Doe</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Amount</span>
-                                <span class="detail-value">₹850</span>
-                            </div>
-                        </div>
-                        <div class="order-items">
-                            <h4>Order Items:</h4>
-                            <div class="item-list">
-                                • 2x Butter Chicken<br>
-                                • 1x Dal Makhani<br>
-                                • 3x Naan<br>
-                                • 2x Mango Lassi
-                            </div>
-                        </div>
-                        <div class="order-actions">
-                            <button class="btn btn-success btn-small">Accept Order</button>
-                            <button class="btn btn-primary btn-small">Modify</button>
-                            <button class="btn btn-danger btn-small">Reject</button>
-                        </div>
-                    </div>
-
-                    <div class="order-card">
-                        <div class="order-header">
-                            <span class="order-id">Order #1235</span>
-                            <span class="order-status status-incoming">Incoming</span>
-                        </div>
-                        <div class="order-details">
-                            <div class="detail-item">
-                                <span class="detail-label">Table</span>
-                                <span class="detail-value">Table 8</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Time</span>
-                                <span class="detail-value">2:35 PM</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Waiter</span>
-                                <span class="detail-value">Sarah Smith</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Amount</span>
-                                <span class="detail-value">₹1,200</span>
-                            </div>
-                        </div>
-                        <div class="order-items">
-                            <h4>Order Items:</h4>
-                            <div class="item-list">
-                                • 1x Paneer Tikka Masala<br>
-                                • 1x Biryani<br>
-                                • 2x Garlic Naan<br>
-                                • 1x Gulab Jamun
-                            </div>
-                        </div>
-                        <div class="order-actions">
-                            <button class="btn btn-success btn-small">Accept Order</button>
-                            <button class="btn btn-primary btn-small">Modify</button>
-                            <button class="btn btn-danger btn-small">Reject</button>
-                        </div>
-                    </div>
+                    <div class="loading">Loading orders...</div>
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Reject Order Modal -->
+    <div class="modal" id="rejectModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Reject Order</h2>
+                <button class="close-btn" onclick="closeRejectModal()">&times;</button>
+            </div>
+            <form id="rejectForm">
+                <div class="form-group">
+                    <label>Rejection Reason</label>
+                    <textarea id="rejectionReason" placeholder="Please provide a reason for rejecting this order..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-danger" style="width: 100%;">Reject Order</button>
+            </form>
+        </div>
     </div>
 
     <!-- New Order Modal -->
@@ -607,26 +548,15 @@
             <form onsubmit="handleNewOrder(event)">
                 <div class="form-group">
                     <label>Table Number</label>
-                    <select required>
-                        <option value="">Select Table</option>
-                        <option value="1">Table 1</option>
-                        <option value="2">Table 2</option>
-                        <option value="3">Table 3</option>
-                        <option value="4">Table 4</option>
-                        <option value="5">Table 5</option>
-                    </select>
+                    <input type="number" required placeholder="Enter table number">
                 </div>
                 <div class="form-group">
-                    <label>Customer Name (Optional)</label>
-                    <input type="text" placeholder="Enter customer name">
+                    <label>Customer ID</label>
+                    <input type="number" placeholder="Enter customer ID (optional)">
                 </div>
                 <div class="form-group">
-                    <label>Waiter Name</label>
-                    <input type="text" placeholder="Enter waiter name" required>
-                </div>
-                <div class="form-group">
-                    <label>Order Items</label>
-                    <textarea placeholder="Enter order items (one per line)" required></textarea>
+                    <label>Waiter ID</label>
+                    <input type="number" required placeholder="Enter waiter ID">
                 </div>
                 <div class="form-group">
                     <label>Special Instructions</label>
@@ -638,35 +568,412 @@
     </div>
 
     <script>
-        function showTab(tab) {
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+        // Configuration
+        const API_BASE_URL = 'http://localhost:3000/api';
+        let currentStatus = 'Incoming';
+        let currentRejectOrderId = null;
+        let orderCounts = {};
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadOrderCounts();
+            setupSearch();
             
-            // Here you would load different order data based on the tab
-            console.log('Showing tab:', tab);
+            // Auto-refresh every 30 seconds
+            setInterval(() => {
+                loadOrderCounts();
+                loadOrdersByStatus(currentStatus);
+            }, 30000);
+        });
+
+        // Setup search with debounce
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            let searchTimeout;
+            
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    const query = e.target.value.trim();
+                    if (query) {
+                        searchOrders(query);
+                    } else {
+                        loadOrdersByStatus(currentStatus);
+                    }
+                }, 500);
+            });
         }
 
+        // Load order counts for tabs
+        async function loadOrderCounts() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/orders`);
+                const result = await response.json();
+
+                if (result.success) {
+                    // Count orders by status
+                    orderCounts = {
+                        'Incoming': 0,
+                        'Preparing': 0,
+                        'Ready': 0,
+                        'Completed': 0
+                    };
+
+                    result.data.forEach(order => {
+                        if (orderCounts.hasOwnProperty(order.order_status)) {
+                            orderCounts[order.order_status]++;
+                        }
+                    });
+
+                    renderTabs();
+                    
+                    // Load first tab data if not already loaded
+                    if (!document.getElementById('ordersContent').querySelector('.order-card')) {
+                        loadOrdersByStatus(currentStatus);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading order counts:', error);
+            }
+        }
+
+        // Render tabs with counts
+        function renderTabs() {
+            const tabsContainer = document.getElementById('tabsContainer');
+            const statuses = ['Incoming', 'Preparing', 'Ready', 'Completed'];
+            
+            tabsContainer.innerHTML = statuses.map(status => `
+                <button 
+                    class="tab ${status === currentStatus ? 'active' : ''}" 
+                    onclick="switchTab('${status}')"
+                >
+                    ${status === 'Incoming' ? 'Incoming Orders' : status} (${orderCounts[status] || 0})
+                </button>
+            `).join('');
+        }
+
+        // Switch tabs
+        function switchTab(status) {
+            currentStatus = status;
+            renderTabs();
+            loadOrdersByStatus(status);
+        }
+
+        // Load orders by status
+        async function loadOrdersByStatus(status) {
+            const container = document.getElementById('ordersContent');
+            container.innerHTML = '<div class="loading">Loading orders...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/orders/orderstatus/${status}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    if (result.data.length === 0) {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📋</div>
+                                <p>No ${status.toLowerCase()} orders found</p>
+                            </div>
+                        `;
+                    } else {
+                        // Fetch order items for each order
+                        const ordersWithItems = await Promise.all(
+                            result.data.map(async (order) => {
+                                const itemsResponse = await fetch(`${API_BASE_URL}/orders/${order.order_id}`);
+                                const itemsResult = await itemsResponse.json();
+                                
+                                // Fetch items from order_items table
+                                const orderItemsResponse = await fetch(`${API_BASE_URL}/orders/${order.order_id}/details`);
+                                let orderItems = [];
+                                
+                                if (orderItemsResponse.ok) {
+                                    const orderItemsResult = await orderItemsResponse.json();
+                                    if (orderItemsResult.success && orderItemsResult.data.items) {
+                                        orderItems = orderItemsResult.data.items.map(item => 
+                                            `${item.quantity}x ${item.menuname}`
+                                        );
+                                    }
+                                }
+                                
+                                return {
+                                    ...order,
+                                    order_items: orderItems
+                                };
+                            })
+                        );
+                        
+                        container.innerHTML = ordersWithItems.map(order => createOrderCard(order)).join('');
+                    }
+                } else {
+                    container.innerHTML = '<div class="empty-state"><p>Error loading orders</p></div>';
+                }
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                container.innerHTML = '<div class="empty-state"><p>Error loading orders. Please check if the server is running.</p></div>';
+            }
+        }
+
+        // Search orders
+        async function searchOrders(query) {
+            const container = document.getElementById('ordersContent');
+            container.innerHTML = '<div class="loading">Searching...</div>';
+
+            try {
+                // Search across all orders and filter by query
+                const response = await fetch(`${API_BASE_URL}/orders`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const searchLower = query.toLowerCase();
+                    const filteredOrders = result.data.filter(order => 
+                        order.order_id.toString().includes(searchLower) ||
+                        (order.customer_name && order.customer_name.toLowerCase().includes(searchLower)) ||
+                        order.table_id.toString().includes(searchLower)
+                    );
+
+                    if (filteredOrders.length === 0) {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                <div class="empty-state-icon">🔍</div>
+                                <p>No orders found matching "${query}"</p>
+                            </div>
+                        `;
+                    } else {
+                        // Fetch items for filtered orders
+                        const ordersWithItems = await Promise.all(
+                            filteredOrders.map(async (order) => {
+                                const orderItemsResponse = await fetch(`${API_BASE_URL}/orders/${order.order_id}/details`);
+                                let orderItems = [];
+                                
+                                if (orderItemsResponse.ok) {
+                                    const orderItemsResult = await orderItemsResponse.json();
+                                    if (orderItemsResult.success && orderItemsResult.data.items) {
+                                        orderItems = orderItemsResult.data.items.map(item => 
+                                            `${item.quantity}x ${item.menuname}`
+                                        );
+                                    }
+                                }
+                                
+                                return {
+                                    ...order,
+                                    order_items: orderItems
+                                };
+                            })
+                        );
+                        
+                        container.innerHTML = ordersWithItems.map(order => createOrderCard(order)).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('Error searching orders:', error);
+                container.innerHTML = '<div class="empty-state"><p>Error searching orders</p></div>';
+            }
+        }
+
+        // Create order card HTML
+        function createOrderCard(order) {
+            const statusClass = `status-${order.order_status.toLowerCase()}`;
+            const time = new Date(order.order_date).toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+            const actions = getOrderActions(order);
+            
+            const itemsList = order.order_items && order.order_items.length > 0
+                ? order.order_items.map(item => `• ${item}`).join('<br>')
+                : '• No items found';
+            
+            return `
+                <div class="order-card">
+                    <div class="order-header">
+                        <span class="order-id">Order #${order.order_id}</span>
+                        <span class="order-status ${statusClass}">${order.order_status}</span>
+                    </div>
+                    <div class="order-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Table</span>
+                            <span class="detail-value">Table ${order.table_id}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Time</span>
+                            <span class="detail-value">${time}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Waiter</span>
+                            <span class="detail-value">${order.waiter_name || 'Not Assigned'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Amount</span>
+                            <span class="detail-value">₹${order.final_amount}</span>
+                        </div>
+                    </div>
+                    <div class="order-items">
+                        <h4>Order Items:</h4>
+                        <div class="item-list">
+                            ${itemsList}
+                        </div>
+                    </div>
+                    ${order.special_instructions ? `
+                        <div class="detail-item" style="margin: 12px 0;">
+                            <span class="detail-label">Special Instructions</span>
+                            <span class="detail-value" style="font-weight: 400;">${order.special_instructions}</span>
+                        </div>
+                    ` : ''}
+                    <div class="order-actions">
+                        ${actions}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Get appropriate actions based on order status
+        function getOrderActions(order) {
+            switch (order.order_status) {
+                case 'Incoming':
+                    return `
+                        <button class="btn btn-success btn-small" onclick="acceptOrder(${order.order_id})">Accept Order</button>
+                        <button class="btn btn-primary btn-small" onclick="modifyOrder(${order.order_id})">Modify</button>
+                        <button class="btn btn-danger btn-small" onclick="openRejectModal(${order.order_id})">Reject</button>
+                    `;
+                case 'Preparing':
+                    return `
+                        <button class="btn btn-success btn-small" onclick="markAsReady(${order.order_id})">Mark as Ready</button>
+                        <button class="btn btn-primary btn-small" onclick="modifyOrder(${order.order_id})">Modify</button>
+                    `;
+                case 'Ready':
+                    return `
+                        <button class="btn btn-success btn-small" onclick="completeOrder(${order.order_id})">Complete Order</button>
+                    `;
+                case 'Completed':
+                    return `<span style="color: #28a745; font-weight: 500;">✓ Order Completed</span>`;
+                default:
+                    return '';
+            }
+        }
+
+        // Accept order (Incoming → Preparing)
+        async function acceptOrder(orderId) {
+            if (!confirm('Accept this order and move to preparing?')) return;
+            await updateOrderStatus(orderId, 'Preparing');
+        }
+
+        // Mark as ready (Preparing → Ready)
+        async function markAsReady(orderId) {
+            if (!confirm('Mark this order as ready?')) return;
+            await updateOrderStatus(orderId, 'Ready');
+        }
+
+        // Complete order (Ready → Completed)
+        async function completeOrder(orderId) {
+            if (!confirm('Mark this order as completed?')) return;
+            await updateOrderStatus(orderId, 'Completed');
+        }
+
+        // Update order status
+        async function updateOrderStatus(orderId, newStatus) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        order_status: newStatus,
+                        customer_id: 1, // These should be fetched from the order
+                        table_id: 1,
+                        waiter_id: 1,
+                        total_amount: 0,
+                        tax_amount: 0,
+                        discount_amount: 0,
+                        final_amount: 0,
+                        payment_status: 'Unpaid',
+                        payment_method: null,
+                        special_instructions: null,
+                        is_active: 1,
+                        modified_by: 'Admin'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(`Order #${orderId} updated to ${newStatus}`);
+                    loadOrderCounts();
+                    loadOrdersByStatus(currentStatus);
+                } else {
+                    alert('Error updating order: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error updating order:', error);
+                alert('Error updating order. Please try again.');
+            }
+        }
+
+        // Open reject modal
+        function openRejectModal(orderId) {
+            currentRejectOrderId = orderId;
+            document.getElementById('rejectModal').classList.add('active');
+        }
+
+        // Close reject modal
+        function closeRejectModal() {
+            document.getElementById('rejectModal').classList.remove('active');
+            document.getElementById('rejectionReason').value = '';
+            currentRejectOrderId = null;
+        }
+
+        // Handle reject form submission
+        document.getElementById('rejectForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const reason = document.getElementById('rejectionReason').value;
+            
+            try {
+                // For now, we'll just update the status to a cancelled/rejected state
+                // You may need to add a 'Cancelled' status to your database
+                await updateOrderStatus(currentRejectOrderId, 'Completed'); // Using Completed as placeholder
+                
+                alert(`Order #${currentRejectOrderId} rejected: ${reason}`);
+                closeRejectModal();
+                loadOrderCounts();
+                loadOrdersByStatus(currentStatus);
+            } catch (error) {
+                console.error('Error rejecting order:', error);
+                alert('Error rejecting order. Please try again.');
+            }
+        });
+
+        // Modify order (placeholder)
+        function modifyOrder(orderId) {
+            alert(`Modify order #${orderId} - This feature will open a modal to edit order items`);
+        }
+
+        // Open new order modal
         function openNewOrderModal() {
             document.getElementById('newOrderModal').classList.add('active');
         }
 
+        // Close new order modal
         function closeNewOrderModal() {
             document.getElementById('newOrderModal').classList.remove('active');
         }
 
+        // Handle new order form
         function handleNewOrder(event) {
             event.preventDefault();
-            alert('New order created successfully!');
+            alert('New order creation - This feature needs to be fully implemented with your backend');
             closeNewOrderModal();
-            event.target.reset();
         }
 
-        // Close modal when clicking outside
-        document.getElementById('newOrderModal').addEventListener('click', function(event) {
-            if (event.target === this) {
-                closeNewOrderModal();
-            }
+        // Close modals when clicking outside
+        document.getElementById('rejectModal').addEventListener('click', function(e) {
+            if (e.target === this) closeRejectModal();
+        });
+
+        document.getElementById('newOrderModal').addEventListener('click', function(e) {
+            if (e.target === this) closeNewOrderModal();
         });
     </script>
 </body>
