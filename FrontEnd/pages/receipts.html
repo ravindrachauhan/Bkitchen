@@ -3,12 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Receipts -  Bhatt's Kitchen </title>
+    <title>Receipts - Bhatt's Kitchen</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
         }
 
         body {
@@ -158,6 +168,22 @@
         .filter-group {
             display: flex;
             gap: 10px;
+            align-items: center;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 11px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #2d5a3d;
         }
 
         .btn {
@@ -275,7 +301,7 @@
             background: white;
             border-radius: 12px;
             padding: 30px;
-            max-width: 500px;
+            max-width: 600px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
@@ -403,11 +429,18 @@
             font-size: 11px;
             color: #666;
         }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <nav class="navbar">
-        <div class="navbar-brand"> Bhatt's Kitchen </div>
+        <div class="navbar-brand">Bhatt's Kitchen</div>
         <div class="navbar-user">
             <div class="user-info">
                 <span class="user-name">Manager Name</span>
@@ -437,11 +470,16 @@
 
             <div class="action-bar">
                 <div class="search-box">
-                    <input type="text" placeholder="Search receipts by ID, customer name, or order number...">
+                    <input type="text" id="searchReceipts" placeholder="Search receipts by ID, customer name, or order number...">
                 </div>
                 <div class="filter-group">
-                    <button class="btn btn-outline">Filter</button>
-                    <button class="btn btn-secondary" onclick="openGenerateReceiptModal()">+ Generate Receipt</button>
+                    <input type="date" id="filterDate" title="Filter by date">
+                    <select id="filterPaymentStatus" title="Filter by payment status">
+                        <option value="">All Payment Status</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Unpaid">Unpaid</option>
+                    </select>
+                    <button class="btn btn-secondary" onclick="receiptsManager.openGenerateReceiptModal()">+ Generate Receipt</button>
                 </div>
             </div>
 
@@ -458,21 +496,65 @@
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="receiptsTableBody">
                         <tr>
-                            <td><span class="receipt-id">RCP-001234</span></td>
-                            <td>#1234</td>
-                            <td>Rajesh Kumar</td>
-                            <td>Dec 08, 2024 - 2:30 PM</td>
-                            <td><strong>₹850</strong></td>
-                            <td>Cash</td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn btn-primary btn-icon" onclick="viewReceipt('RCP-001234')">👁 View</button>
-                                    <button class="btn btn-secondary btn-icon" onclick="printReceipt('RCP-001234')">🖨 Print</button>
-                                </div>
+                            <td colspan="7" style="text-align: center; padding: 40px;">
+                                Loading receipts...
                             </td>
                         </tr>
-                        <tr>
-                            <td><span class="receipt-id">RCP-001235</span></td>
-                            <td>#1235</td>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Receipt View Modal -->
+    <div id="receiptModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Receipt Details</h2>
+                <button class="close-btn" onclick="receiptsManager.closeModal()">&times;</button>
+            </div>
+            <div id="receiptPreview">
+                <!-- Receipt content will be dynamically inserted here -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="receiptsManager.doPrint()">🖨 Print Receipt</button>
+                <button class="btn btn-outline" onclick="receiptsManager.closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generate Receipt Modal -->
+    <div id="generateReceiptModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Generate Receipt</h2>
+                <button class="close-btn" onclick="receiptsManager.closeGenerateModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="selectOrder">Select Order *</label>
+                <select id="selectOrder" required>
+                    <option value="">-- Select an Order --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="paymentMethod">Payment Method *</label>
+                <select id="paymentMethod" required>
+                    <option value="">-- Select Payment Method --</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Card">Card</option>
+                    <option value="UPI">UPI</option>
+                    <option value="Online">Online Banking</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="receiptsManager.generateReceipt()">Generate Receipt</button>
+                <button class="btn btn-outline" onclick="receiptsManager.closeGenerateModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/receipts.js"></script>
+</body>
+</html>
