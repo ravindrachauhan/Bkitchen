@@ -1946,4 +1946,268 @@ router.get('/reports/popular-items', async (req, res) => {
     }
 });
 
+// 1. GET - Get all receipts with order details
+router.get('/receipts', async (req, res) => {
+    try {
+        const [rows] = await db.query(`
+            SELECT 
+                r.*,
+                o.order_date,
+                o.total_amount,
+                o.tax_amount,
+                o.discount_amount,
+                o.final_amount,
+                o.order_type,
+                o.table_id,
+                COALESCE(o.customer_name, u.user_name) as customer_name,
+                COALESCE(o.customer_phone, u.u_phone) as customer_phone,
+                o.customer_address,
+                s.staff_name as waiter_name
+            FROM receipts r
+            INNER JOIN orders o ON r.order_id = o.order_id
+            LEFT JOIN users u ON o.customer_id = u.user_id
+            LEFT JOIN waiters w ON o.waiter_id = w.waiter_id
+            LEFT JOIN staff s ON w.staff_id = s.staff_id
+            WHERE r.is_deleted = 0
+            ORDER BY r.generated_date DESC
+        `);
+        
+        res.json({
+            success: true,
+            count: rows.length,
+            data: rows
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching receipts',
+            error: error.message
+        });
+    }
+});
+
+// 2. GET - Get single receipt by ID
+router.get('/receipts/:id', async (req, res) => {
+    try {
+        const [rows] = await db.query(`
+            SELECT 
+                r.*,
+                o.order_date,
+                o.total_amount,
+                o.tax_amount,
+                o.discount_amount,
+                o.final_amount,
+                o.order_type,
+                o.table_id,
+                o.special_instructions,
+                COALESCE(o.customer_name, u.user_name) as customer_name,
+                COALESCE(o.customer_phone, u.u_phone) as customer_phone,
+                o.customer_address,
+                s.staff_name as waiter_name
+            FROM receipts r
+            INNER JOIN orders o ON r.order_id = o.order_id
+            LEFT JOIN users u ON o.customer_id = u.user_id
+            LEFT JOIN waiters w ON o.waiter_id = w.waiter_id
+            LEFT JOIN staff s ON w.staff_id = s.staff_id
+            WHERE r.receipt_id = ? AND r.is_deleted = 0
+        `, [req.params.id]);
+        
+        if (rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Receipt not found'
+            });
+        }
+        
+        // Get order items
+        const [items] = await db.query(`
+            SELECT 
+                oi.*,
+                m.menuname,
+                m.description,
+                c.categoryname
+            FROM order_items oi
+            LEFT JOIN menuitems m ON oi.menu_id = m.menuId
+            LEFT JOIN category c ON m.categoryId = c.categoryId
+            WHERE oi.order_id = ? AND oi.is_deleted = 0
+            ORDER BY oi.order_item_id
+        `, [rows[0].order_id]);
+        
+        res.json({
+            success: true,
+            data: {
+                ...rows[0],
+                items: items
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching receipt',
+            error: error.message
+        });
+    }
+});
+
+// 3. GET - Get receipt by order ID
+router.get('/receipts/order/:orderId', async (req, res) => {
+    try {
+        const [rows] = await db.query(`
+            SELECT 
+                r.*,
+                o.order_date,
+                o.total_amount,
+                o.tax_amount,
+                o.discount_amount,
+                o.final_amount,
+                o.order_type,
+                o.table_id,
+                o.special_instructions,
+                COALESCE(o.customer_name, u.user_name) as customer_name,
+                COALESCE(o.customer_phone, u.u_phone) as customer_phone,
+                o.customer_address,
+                s.staff_name as waiter_name
+            FROM receipts r
+            INNER JOIN orders o ON r.order_id = o.order_id
+            LEFT JOIN users u ON o.customer_id = u.user_id
+            LEFT JOIN waiters w ON o.waiter_id = w.waiter_id
+            LEFT JOIN staff s ON w.staff_id = s.staff_id
+            WHERE r.order_id = ? AND r.is_deleted = 0
+            ORDER BY r.generated_date DESC
+        `, [req.params.orderId]);
+        
+        if (rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'No receipt found for this order'
+            });
+        }
+        
+        // Get order items
+        const [items] = await db.query(`
+            SELECT 
+                oi.*,
+                m.menuname,
+                m.description,
+                c.categoryname
+            FROM order_items oi
+            LEFT JOIN menuitems m ON oi.menu_id = m.menuId
+            LEFT JOIN category c ON m.categoryId = c.categoryId
+            WHERE oi.order_id = ? AND oi.is_deleted = 0
+            ORDER BY oi.order_item_id
+        `, [req.params.orderId]);
+        
+        res.json({
+            success: true,
+            data: {
+                ...rows[0],
+                items: items
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching receipt',
+            error: error.message
+        });
+    }
+});
+
+// 4. POST - Generate new receipt
+router.post('/receipts/generate', async (req, res) => {
+    const connection = await db.getConnection();
+    
+    try {
+        await connection.beginTransaction();
+        
+        const { order_id, payment_method, payment_status, created_by } = req.body;
+        
+        if (!order_id || !payment_method) {
+            return res.status(400).json({
+                success: false,
+                message: 'Order ID and payment method are required'
+            });
+        }
+        
+        // Check if order exists
+        const [orderCheck] = await connection.query(
+            'SELECT order_id, payment_status FROM orders WHERE order_id = ? AND is_deleted = 0',
+            [order_id]
+        );
+        
+        if (orderCheck.length === 0) {
+            await connection.rollback();
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+        
+        // Check if receipt already exists
+        const [existingReceipt] = await connection.query(
+            'SELECT receipt_id FROM receipts WHERE order_id = ? AND is_deleted = 0',
+            [order_id]
+        );
+        
+        if (existingReceipt.length > 0) {
+            await connection.rollback();
+            return res.status(400).json({
+                success: false,
+                message: 'Receipt already exists for this order',
+                receipt_id: existingReceipt[0].receipt_id
+            });
+        }
+        
+        // Generate receipt number
+        const receiptNumber = `RCP-${String(order_id).padStart(6, '0')}`;
+        
+        // Determine payment status (default to 'Paid' if not provided)
+        const finalPaymentStatus = payment_status || 'Paid';
+        
+        // Insert receipt
+        const [receiptResult] = await connection.query(
+            `INSERT INTO receipts (order_id, receipt_number, payment_method, payment_status, created_by, modified_by)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [order_id, receiptNumber, payment_method, finalPaymentStatus, created_by || 'Manager', created_by || 'Manager']
+        );
+        
+        // Update order status
+        await connection.query(
+            `UPDATE orders 
+             SET order_status = 'Completed', 
+                 payment_status = ?,
+                 payment_method = ?,
+                 modified_by = ?,
+                 modified_on = CURRENT_TIMESTAMP
+             WHERE order_id = ?`,
+            [finalPaymentStatus, payment_method, created_by || 'Manager', order_id]
+        );
+        
+        await connection.commit();
+        
+        res.status(201).json({
+            success: true,
+            message: 'Receipt generated successfully',
+            data: {
+                receipt_id: receiptResult.insertId,
+                receipt_number: receiptNumber,
+                order_id: order_id,
+                payment_status: finalPaymentStatus
+            }
+        });
+        
+    } catch (error) {
+        await connection.rollback();
+        console.error('Error generating receipt:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error generating receipt',
+            error: error.message
+        });
+    } finally {
+        connection.release();
+    }
+});
+
+
 module.exports = router;

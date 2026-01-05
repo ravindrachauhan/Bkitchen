@@ -474,6 +474,11 @@
                 </div>
                 <div class="filter-group">
                     <input type="date" id="filterDate" title="Filter by date">
+                    <!-- <select id="filterPaymentStatus" title="Filter by payment status">
+                        <option value="">All Payment Status</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Unpaid">Unpaid</option>
+                    </select> -->
                     <select id="filterPaymentStatus" title="Filter by payment status">
                         <option value="">All Payment Status</option>
                         <option value="Paid">Paid</option>
@@ -524,7 +529,7 @@
             </div>
         </div>
     </div>
-
+   
     <!-- Generate Receipt Modal -->
     <div id="generateReceiptModal" class="modal">
         <div class="modal-content">
@@ -546,6 +551,13 @@
                     <option value="Card">Card</option>
                     <option value="UPI">UPI</option>
                     <option value="Online">Online Banking</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="paymentStatus">Payment Status *</label>
+                <select id="paymentStatus" required>
+                    <option value="Paid">Paid</option>
+                    <option value="Unpaid">Unpaid</option>
                 </select>
             </div>
             <div class="modal-actions">
