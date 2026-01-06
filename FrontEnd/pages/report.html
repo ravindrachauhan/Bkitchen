@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reports & Analytics - Bhatt's Kitchen </title>
+    <title>Reports & Analytics - Bhatt's Kitchen</title>
     <style>
         * {
             margin: 0;
@@ -297,91 +297,6 @@
             display: block;
         }
 
-        .top-items-list {
-            list-style: none;
-        }
-
-        .top-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            border-bottom: 1px solid #f0f0f0;
-            transition: background 0.3s;
-        }
-
-        .top-item:hover {
-            background: #f9f9f9;
-        }
-
-        .top-item:last-child {
-            border-bottom: none;
-        }
-
-        .item-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .item-rank {
-            width: 32px;
-            height: 32px;
-            background: #2d5a3d;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .item-rank.gold {
-            background: linear-gradient(135deg, #d4a017 0%, #f4b027 100%);
-        }
-
-        .item-rank.silver {
-            background: linear-gradient(135deg, #c0c0c0 0%, #d0d0d0 100%);
-        }
-
-        .item-rank.bronze {
-            background: linear-gradient(135deg, #cd7f32 0%, #dd8f42 100%);
-        }
-
-        .item-details h4 {
-            font-size: 15px;
-            color: #2c2c2c;
-            margin-bottom: 3px;
-        }
-
-        .item-details p {
-            font-size: 13px;
-            color: #999;
-        }
-
-        .item-stats {
-            text-align: right;
-        }
-
-        .item-revenue {
-            font-size: 18px;
-            font-weight: 600;
-            color: #2d5a3d;
-            margin-bottom: 3px;
-        }
-
-        .item-orders {
-            font-size: 13px;
-            color: #999;
-        }
-
-        .export-section {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
         table {
             width: 100%;
             border-collapse: collapse;
@@ -411,47 +326,64 @@
             background: #f9f9f9;
         }
 
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #f0f0f0;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 5px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #2d5a3d 0%, #3d6a4d 100%);
-            transition: width 0.3s;
-        }
-
-        .metric-card {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 20px;
-            border-radius: 10px;
-            border-left: 4px solid #2d5a3d;
-            margin-bottom: 15px;
-        }
-
-        .metric-card h4 {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 8px;
-        }
-
-        .metric-card .value {
-            font-size: 24px;
-            font-weight: 600;
-            color: #2d5a3d;
-        }
-
         .icon {
             font-size: 20px;
         }
 
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+            color: #2d5a3d;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
         @media print {
-            .navbar, .sidebar, .filter-bar, .export-section {
+            .navbar, .sidebar, .filter-bar {
                 display: none;
             }
             .main-content {
@@ -462,7 +394,7 @@
 </head>
 <body>
     <nav class="navbar">
-        <div class="navbar-brand"> Bhatt's Kitchen </div>
+        <div class="navbar-brand">Bhatt's Kitchen</div>
         <div class="navbar-user">
             <div class="user-info">
                 <span class="user-name">Manager Name</span>
@@ -512,7 +444,7 @@
                     <input type="date" id="toDate" value="2024-12-11">
                 </div>
                 <div style="align-self: flex-end;">
-                    <button class="btn btn-primary" onclick="generateReport()">
+                    <button class="btn btn-primary" onclick="openGenerateReportModal()">
                         <span class="icon">📊</span> Generate Report
                     </button>
                 </div>
@@ -542,7 +474,7 @@
                 </div>
             </div>
 
-            <!-- Daily/Weekly/Monthly Revenue -->
+            <!-- Revenue Analysis -->
             <div class="report-section">
                 <h3><span class="icon">📊</span> Revenue Analysis</h3>
                 
@@ -553,15 +485,6 @@
                 </div>
 
                 <div id="dailyRevenue" class="tab-content active">
-                    <div class="metric-card">
-                        <h4>Today's Revenue (Dec 11, 2024)</h4>
-                        <div class="value">₹12,450</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 82%;"></div>
-                        </div>
-                        <p style="font-size: 12px; color: #666; margin-top: 5px;">82% of daily target (₹15,000)</p>
-                    </div>
-
                     <table>
                         <thead>
                             <tr>
@@ -587,55 +510,11 @@
                                 <td>₹461</td>
                                 <td>₹2,142</td>
                             </tr>
-                            <tr>
-                                <td>Dec 09, 2024</td>
-                                <td>28</td>
-                                <td><strong>₹13,650</strong></td>
-                                <td>₹488</td>
-                                <td>₹2,048</td>
-                            </tr>
-                            <tr>
-                                <td>Dec 08, 2024</td>
-                                <td>35</td>
-                                <td><strong>₹16,450</strong></td>
-                                <td>₹470</td>
-                                <td>₹2,468</td>
-                            </tr>
-                            <tr>
-                                <td>Dec 07, 2024</td>
-                                <td>29</td>
-                                <td><strong>₹13,920</strong></td>
-                                <td>₹480</td>
-                                <td>₹2,088</td>
-                            </tr>
-                            <tr>
-                                <td>Dec 06, 2024</td>
-                                <td>26</td>
-                                <td><strong>₹12,180</strong></td>
-                                <td>₹468</td>
-                                <td>₹1,827</td>
-                            </tr>
-                            <tr>
-                                <td>Dec 05, 2024</td>
-                                <td>33</td>
-                                <td><strong>₹15,670</strong></td>
-                                <td>₹475</td>
-                                <td>₹2,351</td>
-                            </tr>
                         </tbody>
                     </table>
                 </div>
 
                 <div id="weeklyRevenue" class="tab-content">
-                    <div class="metric-card">
-                        <h4>This Week's Revenue</h4>
-                        <div class="value">₹98,600</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 75%;"></div>
-                        </div>
-                        <p style="font-size: 12px; color: #666; margin-top: 5px;">75% of weekly target (₹1,31,250)</p>
-                    </div>
-
                     <table>
                         <thead>
                             <tr>
@@ -654,41 +533,11 @@
                                 <td>₹479</td>
                                 <td>₹14,791</td>
                             </tr>
-                            <tr>
-                                <td>Week 1 (Dec 1-7)</td>
-                                <td>189</td>
-                                <td><strong>₹87,450</strong></td>
-                                <td>₹463</td>
-                                <td>₹13,118</td>
-                            </tr>
-                            <tr>
-                                <td>Week 4 (Nov 25-30)</td>
-                                <td>198</td>
-                                <td><strong>₹92,340</strong></td>
-                                <td>₹466</td>
-                                <td>₹13,851</td>
-                            </tr>
-                            <tr>
-                                <td>Week 3 (Nov 18-24)</td>
-                                <td>176</td>
-                                <td><strong>₹81,280</strong></td>
-                                <td>₹462</td>
-                                <td>₹12,192</td>
-                            </tr>
                         </tbody>
                     </table>
                 </div>
 
                 <div id="monthlyRevenue" class="tab-content">
-                    <div class="metric-card">
-                        <h4>This Month's Revenue (December 2024)</h4>
-                        <div class="value">₹1,86,050</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 68%;"></div>
-                        </div>
-                        <p style="font-size: 12px; color: #666; margin-top: 5px;">68% of monthly target (₹2,73,438)</p>
-                    </div>
-
                     <table>
                         <thead>
                             <tr>
@@ -707,173 +556,48 @@
                                 <td>₹471</td>
                                 <td>₹27,909</td>
                             </tr>
-                            <tr>
-                                <td>November 2024</td>
-                                <td>842</td>
-                                <td><strong>₹3,89,560</strong></td>
-                                <td>₹463</td>
-                                <td>₹58,434</td>
-                            </tr>
-                            <tr>
-                                <td>October 2024</td>
-                                <td>798</td>
-                                <td><strong>₹3,68,940</strong></td>
-                                <td>₹462</td>
-                                <td>₹55,341</td>
-                            </tr>
-                            <tr>
-                                <td>September 2024</td>
-                                <td>765</td>
-                                <td><strong>₹3,52,575</strong></td>
-                                <td>₹461</td>
-                                <td>₹52,886</td>
-                            </tr>
-                            <tr>
-                                <td>August 2024</td>
-                                <td>821</td>
-                                <td><strong>₹3,78,563</strong></td>
-                                <td>₹461</td>
-                                <td>₹56,784</td>
-                            </tr>
                         </tbody>
                     </table>
-                </div>
-            </div>
-
-            <!-- Top Selling Dishes -->
-            <div class="report-section">
-                <h3><span class="icon">🍽️</span> Top Selling Dishes</h3>
-                <ul class="top-items-list">
-                    <li class="top-item">
-                        <div class="item-info">
-                            <div class="item-rank gold">1</div>
-                            <div class="item-details">
-                                <h4>Butter Chicken</h4>
-                                <p>North Indian Curry • Most Popular</p>
-                            </div>
-                        </div>
-                        <div class="item-stats">
-                            <div class="item-revenue">₹24,500</div>
-                            <div class="item-orders">87 orders</div>
-                        </div>
-                    </li>
-                    <li class="top-item">
-                        <div class="item-info">
-                            <div class="item-rank silver">2</div>
-                            <div class="item-details">
-                                <h4>Paneer Tikka Masala</h4>
-                                <p>Vegetarian Curry • Best Rated</p>
-                            </div>
-                        </div>
-                        <div class="item-stats">
-                            <div class="item-revenue">₹18,750</div>
-                            <div class="item-orders">65 orders</div>
-                        </div>
-                    </li>
-                    <li class="top-item">
-                        <div class="item-info">
-                            <div class="item-rank bronze">3</div>
-                            <div class="item-details">
-                                <h4>Biryani (Chicken)</h4>
-                                <p>Rice Dish • Signature Item</p>
-                            </div>
-                        </div>
-                        <div class="item-stats">
-                            <div class="item-revenue">₹16,200</div>
-                            <div class="item-orders">54 orders</div>
-                        </div>
-                    </li>
-                    <li class="top-item">
-                        <div class="item-info">
-                            <div class="item-rank">4</div>
-                            <div class="item-details">
-                                <h4>Dal Makhani</h4>
-                                <p>Lentil Dish • Customer Favorite</p>
-                            </div>
-                        </div>
-                        <div class="item-stats">
-                            <div class="item-revenue">₹12,450</div>
-                            <div class="item-orders">72 orders</div>
-                        </div>
-                    </li>
-                    <li class="top-item">
-                        <div class="item-info">
-                            <div class="item-rank">5</div>
-                            <div class="item-details">
-                                <h4>Garlic Naan</h4>
-                                <p>Bread • Most Ordered Side</p>
-                            </div>
-                        </div>
-                        <div class="item-stats">
-                            <div class="item-revenue">₹8,900</div>
-                            <div class="item-orders">148 orders</div>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Discount Usage -->
-            <div class="report-section">
-                <h3><span class="icon">🎫</span> Discount Usage Summary</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Discount Code</th>
-                            <th>Type</th>
-                            <th>Times Used</th>
-                            <th>Total Discount Given</th>
-                            <th>Revenue Impact</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>WELCOME10</strong></td>
-                            <td>Percentage (10%)</td>
-                            <td>45</td>
-                            <td>₹4,250</td>
-                            <td style="color: #dc3545;">-3.4%</td>
-                        </tr>
-                        <tr>
-                            <td><strong>WEEKEND20</strong></td>
-                            <td>Percentage (20%)</td>
-                            <td>28</td>
-                            <td>₹6,800</td>
-                            <td style="color: #dc3545;">-5.5%</td>
-                        </tr>
-                        <tr>
-                            <td><strong>FLAT100</strong></td>
-                            <td>Fixed Amount (₹100)</td>
-                            <td>52</td>
-                            <td>₹5,200</td>
-                            <td style="color: #dc3545;">-4.2%</td>
-                        </tr>
-                        <tr style="background: #f8f9fa; font-weight: 600;">
-                            <td colspan="2"><strong>TOTAL DISCOUNTS</strong></td>
-                            <td>125</td>
-                            <td style="color: #dc3545;">₹16,250</td>
-                            <td style="color: #dc3545;">-13.1%</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Export Section -->
-            <div class="report-section">
-                <h3><span class="icon">📥</span> Export Reports</h3>
-                <p style="margin-bottom: 15px; color: #666;">Download detailed reports for accounting and tax filing purposes</p>
-                <div class="export-section">
-                    <button class="btn btn-primary" onclick="exportPDF()">
-                        <span class="icon">📄</span> Export as PDF
-                    </button>
-                    <button class="btn btn-secondary" onclick="exportExcel()">
-                        <span class="icon">📊</span> Export as Excel
-                    </button>
                 </div>
             </div>
         </main>
     </div>
 
+    <!-- Generate Report Modal -->
+    <div id="generateReportModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Generate Report</h2>
+                <button class="close-btn" onclick="closeGenerateReportModal()">&times;</button>
+            </div>
+            <p style="margin-bottom: 20px;">Select report type and format to generate:</p>
+            <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="exportPDF()">
+                <span class="icon">📄</span> Generate PDF Report
+            </button>
+            <button class="btn btn-secondary" style="width: 100%;" onclick="exportExcel()">
+                <span class="icon">📊</span> Generate Excel Report
+            </button>
+        </div>
+    </div>
+
     <script>
+        // NEW FUNCTION: Check for page action from dashboard
+        function checkPageAction() {
+            const pageAction = sessionStorage.getItem('pageAction');
+            
+            if (pageAction) {
+                sessionStorage.removeItem('pageAction');
+                
+                if (pageAction === 'generate') {
+                    setTimeout(() => {
+                        openGenerateReportModal();
+                    }, 500);
+                } else if (pageAction === 'view') {
+                    console.log('Viewing reports - page loaded normally');
+                }
+            }
+        }
+
         function showRevenueTab(tab) {
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
@@ -885,11 +609,12 @@
             event.target.classList.add('active');
         }
 
-        function generateReport() {
-            const period = document.getElementById('reportPeriod').value;
-            const fromDate = document.getElementById('fromDate').value;
-            const toDate = document.getElementById('toDate').value;
-            alert(`Generating ${period} report...\n\nFrom: ${fromDate}\nTo: ${toDate}\n\nReport ready!`);
+        function openGenerateReportModal() {
+            document.getElementById('generateReportModal').classList.add('active');
+        }
+
+        function closeGenerateReportModal() {
+            document.getElementById('generateReportModal').classList.remove('active');
         }
 
         function updateReportData() {
@@ -898,12 +623,24 @@
         }
 
         function exportPDF() {
-            alert('Exporting report as PDF...\n\nYour PDF report will be downloaded shortly!\n\nFile: Financial_Report_' + new Date().toISOString().split('T')[0] + '.pdf');
+            alert('Generating PDF report...\n\nYour PDF report will be downloaded shortly!\n\nFile: Financial_Report_' + new Date().toISOString().split('T')[0] + '.pdf');
+            closeGenerateReportModal();
         }
 
         function exportExcel() {
-            alert('Exporting report as Excel...\n\nYour Excel report will be downloaded shortly!\n\nFile: Financial_Report_' + new Date().toISOString().split('T')[0] + '.xlsx');
+            alert('Generating Excel report...\n\nYour Excel report will be downloaded shortly!\n\nFile: Financial_Report_' + new Date().toISOString().split('T')[0] + '.xlsx');
+            closeGenerateReportModal();
         }
+
+        // Close modal when clicking outside
+        document.getElementById('generateReportModal').addEventListener('click', function(e) {
+            if (e.target === this) closeGenerateReportModal();
+        });
+
+        // Initialize page and check for actions
+        document.addEventListener('DOMContentLoaded', () => {
+            checkPageAction();
+        });
     </script>
 </body>
 </html>

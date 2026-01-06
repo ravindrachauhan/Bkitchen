@@ -242,8 +242,8 @@
                 <div class="card">
                     <h3>Order Management</h3>
                     <div class="card-actions">
-                        <button class="btn btn-primary" onclick="window.location.href='order.html'">View Orders</button>
-                        <button class="btn btn-secondary" onclick="window.location.href='order.html'">New Order</button>
+                        <button class="btn btn-primary" onclick="navigateToPage('./pages/order.html', 'view')">View Orders</button>
+                        <button class="btn btn-secondary" onclick="navigateToPage('./pages/order.html', 'new')">New Order</button>
                     </div>
                 </div>
 
@@ -251,8 +251,8 @@
                 <div class="card">
                     <h3>Inventory Management</h3>
                     <div class="card-actions">
-                        <button class="btn btn-primary" onclick="window.location.href='inventory.html'">View Inventory</button>
-                        <button class="btn btn-secondary" onclick="window.location.href='inventory.html'">Update Stock</button>
+                        <button class="btn btn-primary" onclick="navigateToPage('./pages/inventory.html', 'view')">View Inventory</button>
+                        <button class="btn btn-secondary" onclick="navigateToPage('./pages/inventory.html', 'update')">Update Stock</button>
                     </div>
                 </div>
 
@@ -260,8 +260,8 @@
                 <div class="card">
                     <h3>Reports & Analytics</h3>
                     <div class="card-actions">
-                        <button class="btn btn-primary" onclick="window.location.href='report.html'">View Reports</button>
-                        <button class="btn btn-secondary" onclick="window.location.href='report.html'">Generate Report</button>
+                        <button class="btn btn-primary" onclick="navigateToPage('./pages/report.html', 'view')">View Reports</button>
+                        <button class="btn btn-secondary" onclick="navigateToPage('./pages/report.html', 'generate')">Generate Report</button>
                     </div>
                 </div>
 
@@ -269,7 +269,7 @@
                 <div class="card">
                     <h3>Discounts</h3>
                     <div class="card-actions">
-                        <button class="btn btn-primary" onclick="window.location.href='discount.html'">Apply Discount</button>
+                        <button class="btn btn-primary" onclick="navigateToPage('./pages/discount.html', 'apply')">Apply Discount</button>
                     </div>
                 </div>
 
@@ -277,8 +277,8 @@
                 <div class="card">
                     <h3>Receipts</h3>
                     <div class="card-actions">
-                        <button class="btn btn-primary" onclick="window.location.href='receipts.html'">View Receipts</button>
-                        <button class="btn btn-secondary" onclick="window.location.href='receipts.html'">Generate Receipt</button>
+                        <button class="btn btn-primary" onclick="navigateToPage('./pages/receipts.html', 'view')">View Receipts</button>
+                        <button class="btn btn-secondary" onclick="navigateToPage('./pages/receipts.html', 'generate')">Generate Receipt</button>
                     </div>
                 </div>
             </div>
@@ -347,6 +347,17 @@
         }
 
         const auth = new AuthManager();
+
+        // ============================================================
+        // NEW FUNCTION: Navigation with action parameter
+        // ============================================================
+        function navigateToPage(pageUrl, action) {
+            // Store the action in sessionStorage so the target page can read it
+            sessionStorage.setItem('pageAction', action);
+            
+            // Redirect to the page
+            window.location.href = pageUrl;
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             // Authentication check disabled for direct access

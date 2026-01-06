@@ -3,12 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory Management -  Bhatt's Kitchen</title>
+    <title>Inventory Management - Bhatt's Kitchen</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
         }
 
         body {
@@ -169,6 +179,7 @@
             font-size: 15px;
             transition: all 0.3s;
             font-weight: 500;
+            font-family: inherit;
         }
 
         .btn-primary {
@@ -270,6 +281,12 @@
             font-weight: 600;
         }
 
+        .status-out-of-stock {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
         .status-low {
             background: #fff3cd;
             color: #856404;
@@ -355,7 +372,8 @@
         }
 
         .form-group input,
-        .form-group select {
+        .form-group select,
+        .form-group textarea {
             width: 100%;
             padding: 12px 16px;
             border: 1px solid #e0e0e0;
@@ -365,18 +383,24 @@
         }
 
         .form-group input:focus,
-        .form-group select:focus {
+        .form-group select:focus,
+        .form-group textarea:focus {
             outline: none;
             border-color: #2d5a3d;
+        }
+
+        .form-group input[readonly] {
+            background: #f5f5f5;
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
     <nav class="navbar">
-        <div class="navbar-brand"> Bhatt's Kitchen</div>
+        <div class="navbar-brand">Bhatt's Kitchen</div>
         <div class="navbar-user">
             <div class="user-info">
-                <span class="user-name">Loading...</span>
+                <span class="user-name">Manager Name</span>
                 <span class="user-role">Manager</span>
             </div>
             <button class="logout-btn" onclick="logout()">Logout</button>
@@ -404,19 +428,19 @@
             <div class="stats-grid">
                 <div class="stat-card" style="background: linear-gradient(135deg, #2d5a3d 0%, #3d6a4d 100%);">
                     <h4>Total Items</h4>
-                    <p>45</p>
+                    <p>0</p>
                 </div>
                 <div class="stat-card" style="background: linear-gradient(135deg, #c77e3f 0%, #d78e4f 100%);">
                     <h4>Low Stock Items</h4>
-                    <p>3</p>
+                    <p>0</p>
                 </div>
-                <div class="stat-card" style="background: linear-gradient(135deg, #d4a017 0%, #e4b027 100%);">
+                <div class="stat-card" style="background: linear-gradient(135deg, #bd0903 0%, #e4b027 100%);">
                     <h4>Out of Stock</h4>
                     <p>0</p>
                 </div>
                 <div class="stat-card" style="background: linear-gradient(135deg, #5a7553 0%, #6a8563 100%);">
                     <h4>Reorder Required</h4>
-                    <p>5</p>
+                    <p>0</p>
                 </div>
             </div>
 
@@ -445,80 +469,8 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td><strong>Basmati Rice</strong></td>
-                            <td>Grains</td>
-                            <td>15 kg</td>
-                            <td>kg</td>
-                            <td>10 kg</td>
-                            <td><span class="stock-status status-medium">Medium Stock</span></td>
-                            <td>
-                                <button class="btn btn-primary btn-small" onclick="updateStock('Basmati Rice')">Update</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Chicken Breast</strong></td>
-                            <td>Meat</td>
-                            <td>5 kg</td>
-                            <td>kg</td>
-                            <td>8 kg</td>
-                            <td><span class="stock-status status-low">Low Stock</span></td>
-                            <td>
-                                <button class="btn btn-primary btn-small" onclick="updateStock('Chicken Breast')">Update</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Mozzarella Cheese</strong></td>
-                            <td>Dairy</td>
-                            <td>3 kg</td>
-                            <td>kg</td>
-                            <td>5 kg</td>
-                            <td><span class="stock-status status-low">Low Stock</span></td>
-                            <td>
-                                <button class="btn btn-primary btn-small" onclick="updateStock('Mozzarella Cheese')">Update</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Tomatoes</strong></td>
-                            <td>Vegetables</td>
-                            <td>25 kg</td>
-                            <td>kg</td>
-                            <td>10 kg</td>
-                            <td><span class="stock-status status-high">High Stock</span></td>
-                            <td>
-                                <button class="btn btn-primary btn-small" onclick="updateStock('Tomatoes')">Update</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Onions</strong></td>
-                            <td>Vegetables</td>
-                            <td>20 kg</td>
-                            <td>kg</td>
-                            <td>12 kg</td>
-                            <td><span class="stock-status status-medium">Medium Stock</span></td>
-                            <td>
-                                <button class="btn btn-primary btn-small" onclick="updateStock('Onions')">Update</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Garlic</strong></td>
-                            <td>Spices</td>
-                            <td>2 kg</td>
-                            <td>kg</td>
-                            <td>3 kg</td>
-                            <td><span class="stock-status status-low">Low Stock</span></td>
-                            <td>
-                                <button class="btn btn-primary btn-small" onclick="updateStock('Garlic')">Update</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Olive Oil</strong></td>
-                            <td>Oils</td>
-                            <td>8 L</td>
-                            <td>L</td>
-                            <td>5 L</td>
-                            <td><span class="stock-status status-medium">Medium Stock</span></td>
-                            <td>
-                                <button class="btn btn-primary btn-small" onclick="updateStock('Olive Oil')">Update</button>
+                            <td colspan="7" style="text-align: center; padding: 40px;">
+                                Loading inventory...
                             </td>
                         </tr>
                     </tbody>
@@ -536,39 +488,44 @@
             </div>
             <form onsubmit="handleAddItem(event)">
                 <div class="form-group">
-                    <label>Item Name</label>
-                    <input type="text" placeholder="Enter item name" required>
+                    <label>Item Name *</label>
+                    <input type="text" name="itemName" placeholder="Enter item name" required>
                 </div>
                 <div class="form-group">
-                    <label>Category</label>
-                    <select required>
+                    <label>Category *</label>
+                    <select name="category" required>
                         <option value="">Select Category</option>
-                        <option value="grains">Grains</option>
-                        <option value="meat">Meat</option>
-                        <option value="dairy">Dairy</option>
-                        <option value="vegetables">Vegetables</option>
-                        <option value="spices">Spices</option>
-                        <option value="oils">Oils</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Current Stock</label>
-                    <input type="number" placeholder="Enter quantity" min="0" step="0.1" required>
+                    <label>Price *</label>
+                    <input type="number" name="price" placeholder="Enter price" min="0" step="0.01" required>
                 </div>
                 <div class="form-group">
-                    <label>Unit</label>
-                    <select required>
+                    <label>Description</label>
+                    <textarea name="description" placeholder="Enter item description" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Current Stock *</label>
+                    <input type="number" name="currentStock" placeholder="Enter quantity" min="0" step="0.1" required>
+                </div>
+                <div class="form-group">
+                    <label>Unit *</label>
+                    <select name="unit" required>
                         <option value="">Select Unit</option>
+                        <option value="pcs">Pieces (pcs)</option>
                         <option value="kg">Kilograms (kg)</option>
                         <option value="g">Grams (g)</option>
-                        <option value="l">Liters (L)</option>
+                        <option value="L">Liters (L)</option>
                         <option value="ml">Milliliters (ml)</option>
-                        <option value="pcs">Pieces</option>
+                        <option value="plate">Plate</option>
+                        <option value="bowl">Bowl</option>
+                        <option value="glass">Glass</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Reorder Level</label>
-                    <input type="number" placeholder="Enter reorder threshold" min="0" step="0.1" required>
+                    <label>Reorder Level *</label>
+                    <input type="number" name="reorderLevel" placeholder="Enter reorder threshold" min="0" step="0.1" required>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%;">Add Item</button>
             </form>
@@ -585,10 +542,10 @@
             <form onsubmit="handleUpdateStock(event)">
                 <div class="form-group">
                     <label>Item Name</label>
-                    <input type="text" id="updateItemName" readonly style="background: #f5f5f5;">
+                    <input type="text" id="updateItemName" readonly>
                 </div>
                 <div class="form-group">
-                    <label>Action</label>
+                    <label>Action *</label>
                     <select id="stockAction" required>
                         <option value="add">Add Stock</option>
                         <option value="remove">Remove Stock</option>
@@ -596,7 +553,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Quantity</label>
+                    <label>Quantity *</label>
                     <input type="number" id="stockQuantity" placeholder="Enter quantity" min="0" step="0.1" required>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%;">Update Stock</button>
@@ -604,20 +561,31 @@
         </div>
     </div>
 
+    <script src="../js/inventory.js"></script>
     <script>
-        // Authentication
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
                 alert('Logged out successfully!');
-                window.location.href = 'LOGINPAGE.html';
+                window.location.href = '../LOGINPAGE.html';
             }
         }
 
-        // Load user info
-        document.addEventListener('DOMContentLoaded', function() {
-            const user = { fullname: 'Manager Name' }; // This would come from session
-            document.querySelector('.user-name').textContent = user.fullname;
-        });
+        // NEW FUNCTION: Check for page action from dashboard
+        function checkPageAction() {
+            const pageAction = sessionStorage.getItem('pageAction');
+            
+            if (pageAction) {
+                sessionStorage.removeItem('pageAction');
+                
+                if (pageAction === 'update') {
+                    setTimeout(() => {
+                        openUpdateStockModal();
+                    }, 500);
+                } else if (pageAction === 'view') {
+                    console.log('Viewing inventory - page loaded normally');
+                }
+            }
+        }
 
         // Modal functions
         function openAddItemModal() {
@@ -628,8 +596,7 @@
             document.getElementById('addItemModal').classList.remove('active');
         }
 
-        function updateStock(itemName) {
-            document.getElementById('updateItemName').value = itemName;
+        function openUpdateStockModal() {
             document.getElementById('updateStockModal').classList.add('active');
         }
 
@@ -639,32 +606,28 @@
 
         function handleAddItem(event) {
             event.preventDefault();
-            alert('New item added successfully!');
+            alert('Item added successfully!');
             closeAddItemModal();
-            event.target.reset();
         }
 
         function handleUpdateStock(event) {
             event.preventDefault();
-            const itemName = document.getElementById('updateItemName').value;
-            const action = document.getElementById('stockAction').value;
-            const quantity = document.getElementById('stockQuantity').value;
-            alert(`Stock updated for ${itemName}!\nAction: ${action}\nQuantity: ${quantity}`);
+            alert('Stock updated successfully!');
             closeUpdateStockModal();
-            event.target.reset();
         }
 
         // Close modals when clicking outside
-        document.getElementById('addItemModal').addEventListener('click', function(event) {
-            if (event.target === this) {
-                closeAddItemModal();
-            }
+        document.getElementById('addItemModal').addEventListener('click', function(e) {
+            if (e.target === this) closeAddItemModal();
         });
 
-        document.getElementById('updateStockModal').addEventListener('click', function(event) {
-            if (event.target === this) {
-                closeUpdateStockModal();
-            }
+        document.getElementById('updateStockModal').addEventListener('click', function(e) {
+            if (e.target === this) closeUpdateStockModal();
+        });
+
+        // Initialize page and check for actions
+        document.addEventListener('DOMContentLoaded', () => {
+            checkPageAction();
         });
     </script>
 </body>

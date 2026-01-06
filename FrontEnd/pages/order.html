@@ -796,12 +796,37 @@
             loadMenuItems();
             loadWaiters();
             
+            // Check for page action from dashboard
+            checkPageAction();
+            
             // Auto-refresh every 30 seconds
             setInterval(() => {
                 loadOrderCounts();
                 loadOrdersByStatus(currentStatus);
             }, 30000);
         });
+
+        // NEW FUNCTION: Check if there's a page action from dashboard
+        function checkPageAction() {
+            const pageAction = sessionStorage.getItem('pageAction');
+            
+            if (pageAction) {
+                // Clear the action so it doesn't trigger again on refresh
+                sessionStorage.removeItem('pageAction');
+                
+                // Handle the action
+                if (pageAction === 'new') {
+                    // Open new order modal
+                    setTimeout(() => {
+                        openNewOrderModal();
+                    }, 500); // Small delay to ensure page is fully loaded
+                } else if (pageAction === 'view') {
+                    // Optionally do something for view action
+                    // By default, the page loads with orders visible
+                    console.log('Viewing orders - page loaded normally');
+                }
+            }
+        }
 
         // Toggle table field based on order type
         function toggleTableField() {

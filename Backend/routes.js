@@ -1813,6 +1813,18 @@ router.post('/orders/create-with-items', async (req, res) => {
                 ]
             );
         }
+
+        // After inserting order items, reduce stock
+        for (const item of itemsWithPrices) {
+            // Reduce stock
+            await connection.query(
+                `UPDATE menuitems 
+                SET current_stock = GREATEST(0, current_stock - ?),
+                    modified_on = CURRENT_TIMESTAMP
+                WHERE menuId = ?`,
+                [item.quantity, item.menu_id]
+            );
+        }
         
         await connection.commit();
         
@@ -2209,5 +2221,316 @@ router.post('/receipts/generate', async (req, res) => {
     }
 });
 
+// ==================== INVENTORY APIs ====================
+
+// 1. GET - Get inventory statistics
+router.get('/inventory/stats', async (req, res) => {
+    try {
+        const [totalItems] = await db.query(`
+            SELECT COUNT(*) as total 
+            FROM menuitems 
+            WHERE is_deleted = 0 AND is_active = 1
+        `);
+        
+        const [lowStock] = await db.query(`
+            SELECT COUNT(*) as count 
+            FROM menuitems 
+            WHERE current_stock > 0 
+            AND current_stock <= reorder_level 
+            AND is_deleted = 0 AND is_active = 1
+        `);
+        
+        const [outOfStock] = await db.query(`
+            SELECT COUNT(*) as count 
+            FROM menuitems 
+            WHERE current_stock = 0 
+            AND is_deleted = 0 AND is_active = 1
+        `);
+        
+        const [reorderRequired] = await db.query(`
+            SELECT COUNT(*) as count 
+            FROM menuitems 
+            WHERE current_stock <= reorder_level 
+            AND is_deleted = 0 AND is_active = 1
+        `);
+        
+        res.json({
+            success: true,
+            data: {
+                totalItems: totalItems[0].total,
+                lowStockItems: lowStock[0].count,
+                outOfStock: outOfStock[0].count,
+                reorderRequired: reorderRequired[0].count
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching inventory statistics',
+            error: error.message
+        });
+    }
+});
+
+// 2. GET - Get all inventory items
+router.get('/inventory', async (req, res) => {
+    try {
+        const [rows] = await db.query(`
+            SELECT 
+                m.menuId,
+                m.menuname as item_name,
+                c.categoryname as category,
+                m.current_stock,
+                m.unit,
+                m.reorder_level,
+                m.price,
+                m.last_restocked_date,
+                CASE 
+                    WHEN m.current_stock = 0 THEN 'Out of Stock'
+                    WHEN m.current_stock <= m.reorder_level THEN 'Low Stock'
+                    WHEN m.current_stock <= (m.reorder_level * 2) THEN 'Medium Stock'
+                    ELSE 'High Stock'
+                END as stock_status
+            FROM menuitems m
+            LEFT JOIN category c ON m.categoryId = c.categoryId
+            WHERE m.is_deleted = 0 AND m.is_active = 1
+            ORDER BY m.current_stock ASC, m.menuname ASC
+        `);
+        
+        res.json({
+            success: true,
+            count: rows.length,
+            data: rows
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching inventory',
+            error: error.message
+        });
+    }
+});
+
+// 3. GET - Get inventory by category
+router.get('/inventory/category/:categoryId', async (req, res) => {
+    try {
+        const [rows] = await db.query(`
+            SELECT 
+                m.menuId,
+                m.menuname as item_name,
+                c.categoryname as category,
+                m.current_stock,
+                m.unit,
+                m.reorder_level,
+                m.price,
+                m.last_restocked_date,
+                CASE 
+                    WHEN m.current_stock = 0 THEN 'Out of Stock'
+                    WHEN m.current_stock <= m.reorder_level THEN 'Low Stock'
+                    WHEN m.current_stock <= (m.reorder_level * 2) THEN 'Medium Stock'
+                    ELSE 'High Stock'
+                END as stock_status
+            FROM menuitems m
+            LEFT JOIN category c ON m.categoryId = c.categoryId
+            WHERE m.categoryId = ? AND m.is_deleted = 0 AND m.is_active = 1
+            ORDER BY m.current_stock ASC
+        `, [req.params.categoryId]);
+        
+        res.json({
+            success: true,
+            count: rows.length,
+            data: rows
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching inventory by category',
+            error: error.message
+        });
+    }
+});
+
+// 4. PUT - Update inventory stock
+router.put('/inventory/:id/stock', async (req, res) => {
+    try {
+        const { action, quantity, modified_by } = req.body;
+        
+        if (!action || !quantity) {
+            return res.status(400).json({
+                success: false,
+                message: 'Action and quantity are required'
+            });
+        }
+        
+        // Get current stock
+        const [currentItem] = await db.query(
+            'SELECT current_stock FROM menuitems WHERE menuId = ? AND is_deleted = 0',
+            [req.params.id]
+        );
+        
+        if (currentItem.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Item not found'
+            });
+        }
+        
+        let newStock;
+        const currentStock = parseFloat(currentItem[0].current_stock);
+        const qty = parseFloat(quantity);
+        
+        switch(action) {
+            case 'add':
+                newStock = currentStock + qty;
+                break;
+            case 'remove':
+                newStock = Math.max(0, currentStock - qty);
+                break;
+            case 'set':
+                newStock = qty;
+                break;
+            default:
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid action. Use: add, remove, or set'
+                });
+        }
+        
+        const [result] = await db.query(
+            `UPDATE menuitems 
+             SET current_stock = ?, 
+                 last_restocked_date = CURRENT_TIMESTAMP,
+                 modified_by = ?,
+                 modified_on = CURRENT_TIMESTAMP 
+             WHERE menuId = ?`,
+            [newStock, modified_by || 'Manager', req.params.id]
+        );
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Item not found'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Stock updated successfully',
+            data: {
+                previous_stock: currentStock,
+                new_stock: newStock
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error updating stock',
+            error: error.message
+        });
+    }
+});
+
+// 5. POST - Add new inventory item
+router.post('/inventory', async (req, res) => {
+    try {
+        const {
+            menuname,
+            categoryId,
+            price,
+            description,
+            current_stock,
+            unit,
+            reorder_level,
+            isavailable,
+            created_by
+        } = req.body;
+        
+        const [result] = await db.query(
+            `INSERT INTO menuitems 
+             (menuname, categoryId, price, description, current_stock, unit, reorder_level, 
+              isavailable, is_active, last_restocked_date, created_by, modified_by)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP, ?, ?)`,
+            [
+                menuname,
+                categoryId,
+                price,
+                description || '',
+                current_stock || 0,
+                unit || 'pcs',
+                reorder_level || 10,
+                isavailable !== undefined ? isavailable : 1,
+                created_by || 'Manager',
+                created_by || 'Manager'
+            ]
+        );
+        
+        res.status(201).json({
+            success: true,
+            message: 'Inventory item added successfully',
+            menuId: result.insertId
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error adding inventory item',
+            error: error.message
+        });
+    }
+});
+
+// 6. PUT - Update inventory item details
+router.put('/inventory/:id', async (req, res) => {
+    try {
+        const {
+            menuname,
+            categoryId,
+            price,
+            description,
+            current_stock,
+            unit,
+            reorder_level,
+            isavailable,
+            modified_by
+        } = req.body;
+        
+        const [result] = await db.query(
+            `UPDATE menuitems 
+             SET menuname = ?, categoryId = ?, price = ?, description = ?,
+                 current_stock = ?, unit = ?, reorder_level = ?,
+                 isavailable = ?, modified_by = ?, modified_on = CURRENT_TIMESTAMP
+             WHERE menuId = ? AND is_deleted = 0`,
+            [
+                menuname,
+                categoryId,
+                price,
+                description,
+                current_stock,
+                unit,
+                reorder_level,
+                isavailable,
+                modified_by || 'Manager',
+                req.params.id
+            ]
+        );
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Item not found'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Inventory item updated successfully'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error updating inventory item',
+            error: error.message
+        });
+    }
+});
 
 module.exports = router;

@@ -431,7 +431,7 @@
 </head>
 <body>
     <nav class="navbar">
-        <div class="navbar-brand"> Bhatt's Kitchen</div>
+        <div class="navbar-brand">Bhatt's Kitchen</div>
         <div class="navbar-user">
             <div class="user-info">
                 <span class="user-name">Loading...</span>
@@ -475,7 +475,7 @@
             </div>
 
             <div class="discounts-grid">
-                <!-- Discount Card 1 -->
+                <!-- Discount cards remain the same as original -->
                 <div class="discount-card">
                     <div class="discount-header">
                         <div class="discount-title">
@@ -510,7 +510,6 @@
                     </div>
                 </div>
 
-                <!-- Discount Card 2 -->
                 <div class="discount-card">
                     <div class="discount-header">
                         <div class="discount-title">
@@ -545,7 +544,6 @@
                     </div>
                 </div>
 
-                <!-- Discount Card 3 -->
                 <div class="discount-card">
                     <div class="discount-header">
                         <div class="discount-title">
@@ -579,111 +577,6 @@
                         <button class="btn btn-primary btn-small" onclick="applyDiscount('LUNCH15')">Apply to Order</button>
                     </div>
                 </div>
-
-                <!-- Discount Card 4 -->
-                <div class="discount-card">
-                    <div class="discount-header">
-                        <div class="discount-title">
-                            <h3>Birthday Special</h3>
-                            <span class="discount-code">BDAY100</span>
-                        </div>
-                        <span class="discount-status status-active">Active</span>
-                    </div>
-                    <div class="discount-description">
-                        Flat ₹100 off for customers celebrating their birthday
-                    </div>
-                    <div class="discount-details">
-                        <div class="detail-row">
-                            <span class="detail-label">Discount Type</span>
-                            <span class="detail-value">Fixed Amount</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Discount Value</span>
-                            <span class="detail-value">₹100</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Min. Order Value</span>
-                            <span class="detail-value">₹500</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Usage</span>
-                            <span class="detail-value">Once per customer</span>
-                        </div>
-                    </div>
-                    <div class="discount-actions">
-                        <button class="btn btn-primary btn-small" onclick="applyDiscount('BDAY100')">Apply to Order</button>
-                    </div>
-                </div>
-
-                <!-- Discount Card 5 -->
-                <div class="discount-card">
-                    <div class="discount-header">
-                        <div class="discount-title">
-                            <h3>Festive Offer</h3>
-                            <span class="discount-code">FEST25</span>
-                        </div>
-                        <span class="discount-status status-inactive">Inactive</span>
-                    </div>
-                    <div class="discount-description">
-                        25% off on all orders during festive season
-                    </div>
-                    <div class="discount-details">
-                        <div class="detail-row">
-                            <span class="detail-label">Discount Type</span>
-                            <span class="detail-value">Percentage</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Discount Value</span>
-                            <span class="detail-value">25%</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Min. Order Value</span>
-                            <span class="detail-value">₹1000</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Status</span>
-                            <span class="detail-value" style="color: #721c24;">Expired</span>
-                        </div>
-                    </div>
-                    <div class="discount-actions">
-                        <button class="btn btn-outline btn-small" disabled style="opacity: 0.5; cursor: not-allowed;">Inactive</button>
-                    </div>
-                </div>
-
-                <!-- Discount Card 6 -->
-                <div class="discount-card">
-                    <div class="discount-header">
-                        <div class="discount-title">
-                            <h3>Family Pack Deal</h3>
-                            <span class="discount-code">FAMILY30</span>
-                        </div>
-                        <span class="discount-status status-active">Active</span>
-                    </div>
-                    <div class="discount-description">
-                        30% off on orders above ₹2000 - Perfect for family gatherings
-                    </div>
-                    <div class="discount-details">
-                        <div class="detail-row">
-                            <span class="detail-label">Discount Type</span>
-                            <span class="detail-value">Percentage</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Discount Value</span>
-                            <span class="detail-value">30%</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Min. Order Value</span>
-                            <span class="detail-value">₹2000</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Max. Discount</span>
-                            <span class="detail-value">₹500</span>
-                        </div>
-                    </div>
-                    <div class="discount-actions">
-                        <button class="btn btn-primary btn-small" onclick="applyDiscount('FAMILY30')">Apply to Order</button>
-                    </div>
-                </div>
             </div>
         </main>
     </div>
@@ -707,8 +600,6 @@
                         <option value="WEEKEND20">WEEKEND20 - 20% off</option>
                         <option value="FIRST50">FIRST50 - ₹50 off</option>
                         <option value="LUNCH15">LUNCH15 - 15% off</option>
-                        <option value="BDAY100">BDAY100 - ₹100 off</option>
-                        <option value="FAMILY30">FAMILY30 - 30% off</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -733,10 +624,28 @@
             }
         }
 
+        // NEW FUNCTION: Check for page action from dashboard
+        function checkPageAction() {
+            const pageAction = sessionStorage.getItem('pageAction');
+            
+            if (pageAction) {
+                sessionStorage.removeItem('pageAction');
+                
+                if (pageAction === 'apply') {
+                    setTimeout(() => {
+                        openApplyDiscountModal();
+                    }, 500);
+                }
+            }
+        }
+
         // Load user info
         document.addEventListener('DOMContentLoaded', function() {
             const user = { fullname: 'Manager Name' };
             document.querySelector('.user-name').textContent = user.fullname;
+            
+            // Check for page action
+            checkPageAction();
         });
 
         // Modal functions
