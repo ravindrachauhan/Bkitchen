@@ -137,49 +137,49 @@ class InventoryManager {
     }
    
     renderInventory(items) {
-    const tbody = document.querySelector('.inventory-table tbody');
-    
-    if (!tbody) return;
-    
-    if (items.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="7" style="text-align: center; padding: 40px; color: #999;">
-                    No inventory items found
-                </td>
-            </tr>
-        `;
-        return;
-    }
-
-    tbody.innerHTML = items.map(item => {
-        // Determine status class based on stock status
-        let statusClass = '';
-        if (item.stock_status === 'Out of Stock') {
-            statusClass = 'status-out-of-stock';
-        } else if (item.stock_status === 'Low Stock') {
-            statusClass = 'status-low';
-        } else if (item.stock_status === 'Medium Stock') {
-            statusClass = 'status-medium';
-        } else {
-            statusClass = 'status-high';
-        }
+        const tbody = document.querySelector('.inventory-table tbody');
         
-        return `
-            <tr>
-                <td><strong>${item.item_name}</strong></td>
-                <td>${item.category}</td>
-                <td>${item.current_stock} ${item.unit}</td>
-                <td>${item.unit}</td>
-                <td>${item.reorder_level} ${item.unit}</td>
-                <td><span class="stock-status ${statusClass}">${item.stock_status}</span></td>
-                <td>
-                    <button class="btn btn-primary btn-small" onclick="inventoryManager.openUpdateStockModal(${item.menuId}, '${item.item_name}')">
-                        Update
-                    </button>
-                </td>
-            </tr>
-        `;
+        if (!tbody) return;
+        
+        if (items.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 40px; color: #999;">
+                        No inventory items found
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = items.map(item => {
+            // Determine status class based on stock status
+            let statusClass = '';
+            if (item.stock_status === 'Out of Stock') {
+                statusClass = 'status-out-of-stock';
+            } else if (item.stock_status === 'Low Stock') {
+                statusClass = 'status-low';
+            } else if (item.stock_status === 'Medium Stock') {
+                statusClass = 'status-medium';
+            } else {
+                statusClass = 'status-high';
+            }
+            
+            return `
+                <tr>
+                    <td><strong>${item.item_name}</strong></td>
+                    <td>${item.category}</td>
+                    <td>${item.current_stock} ${item.unit}</td>
+                    <td>${item.unit}</td>
+                    <td>${item.reorder_level} ${item.unit}</td>
+                    <td><span class="stock-status ${statusClass}">${item.stock_status}</span></td>
+                    <td>
+                        <button class="btn btn-primary btn-small" onclick="inventoryManager.openUpdateStockModal(${item.menuId}, '${item.item_name}')">
+                            Update
+                        </button>
+                    </td>
+                </tr>
+            `;
         }).join('');
     }
 
@@ -209,6 +209,29 @@ class InventoryManager {
         } catch (error) {
             console.error('Error filtering by category:', error);
         }
+    }
+
+    // NEW METHOD: Filter by stock status (low or out of stock)
+    filterByStockStatus(status) {
+        let filtered = [];
+        
+        if (status === 'low') {
+            // Show items with Low Stock or Medium Stock status
+            filtered = this.allInventory.filter(item => 
+                item.stock_status === 'Low Stock' || item.stock_status === 'Medium Stock'
+            );
+            this.showNotification('Showing Low Stock items', 'info');
+        } else if (status === 'out') {
+            // Show items with Out of Stock status
+            filtered = this.allInventory.filter(item => 
+                item.stock_status === 'Out of Stock'
+            );
+            this.showNotification('Showing Out of Stock items', 'info');
+        } else {
+            filtered = this.allInventory;
+        }
+        
+        this.renderInventory(filtered);
     }
 
     openAddItemModal() {
@@ -344,7 +367,39 @@ class InventoryManager {
 let inventoryManager;
 document.addEventListener('DOMContentLoaded', () => {
     inventoryManager = new InventoryManager();
+    
+    // Check for page action from dashboard
+    checkPageAction();
 });
+
+// NEW FUNCTION: Check if there's a page action from dashboard
+function checkPageAction() {
+    const pageAction = sessionStorage.getItem('pageAction');
+    
+    if (pageAction) {
+        // Clear the action so it doesn't trigger again on refresh
+        sessionStorage.removeItem('pageAction');
+        
+        // Handle the action
+        if (pageAction === 'update') {
+            setTimeout(() => {
+                inventoryManager.openUpdateStockModal();
+            }, 500);
+        } else if (pageAction === 'filterLowStock') {
+            // Filter to show only low stock items
+            setTimeout(() => {
+                inventoryManager.filterByStockStatus('low');
+            }, 1000);
+        } else if (pageAction === 'filterOutOfStock') {
+            // Filter to show only out of stock items
+            setTimeout(() => {
+                inventoryManager.filterByStockStatus('out');
+            }, 1000);
+        } else if (pageAction === 'view') {
+            console.log('Viewing inventory - page loaded normally');
+        }
+    }
+}
 
 // Global functions for inline onclick handlers
 function openAddItemModal() {

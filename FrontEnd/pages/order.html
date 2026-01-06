@@ -807,8 +807,10 @@
         });
 
         // NEW FUNCTION: Check if there's a page action from dashboard
+        
         function checkPageAction() {
             const pageAction = sessionStorage.getItem('pageAction');
+            const filterDate = sessionStorage.getItem('filterDate');
             
             if (pageAction) {
                 // Clear the action so it doesn't trigger again on refresh
@@ -819,12 +821,100 @@
                     // Open new order modal
                     setTimeout(() => {
                         openNewOrderModal();
-                    }, 500); // Small delay to ensure page is fully loaded
+                    }, 500);
+                } else if (pageAction === 'filterDate' && filterDate) {
+                    // Filter orders by date
+                    sessionStorage.removeItem('filterDate');
+                    setTimeout(() => {
+                        filterOrdersByDate(filterDate);
+                    }, 500);
                 } else if (pageAction === 'view') {
-                    // Optionally do something for view action
-                    // By default, the page loads with orders visible
                     console.log('Viewing orders - page loaded normally');
                 }
+            }
+        }
+
+        // NEW: Filter orders by specific date
+        async function filterOrdersByDate(dateStr) {
+            const container = document.getElementById('ordersContent');
+            container.innerHTML = '<div class="loading">Loading today\'s orders...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/orders/date/${dateStr}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    if (result.data.length === 0) {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📋</div>
+                                <p>No orders found for ${dateStr}</p>
+                            </div>
+                        `;
+                    } else {
+                        // Show notification
+                        const orderDate = new Date(dateStr);
+                        const dateFormatted = orderDate.toLocaleDateString('en-IN', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                        });
+                        
+                        // Fetch order items for each order
+                        const ordersWithItems = await Promise.all(
+                            result.data.map(async (order) => {
+                                const orderItemsResponse = await fetch(`${API_BASE_URL}/orders/${order.order_id}/details`);
+                                let orderItems = [];
+                                
+                                if (orderItemsResponse.ok) {
+                                    const orderItemsResult = await orderItemsResponse.json();
+                                    if (orderItemsResult.success && orderItemsResult.data.items) {
+                                        orderItems = orderItemsResult.data.items.map(item => 
+                                            `${item.quantity}x ${item.menuname}`
+                                        );
+                                    }
+                                }
+                                
+                                return {
+                                    ...order,
+                                    order_items: orderItems
+                                };
+                            })
+                        );
+                        
+                        // Update tabs to show "All Orders" instead of status tabs
+                        const tabsContainer = document.getElementById('tabsContainer');
+                        tabsContainer.innerHTML = `
+                            <button class="tab active">
+                                Orders for ${dateFormatted} (${ordersWithItems.length})
+                            </button>
+                        `;
+                        
+                        container.innerHTML = ordersWithItems.map(order => createOrderCard(order)).join('');
+                        
+                        // Show notification at top
+                        const notification = document.createElement('div');
+                        notification.style.cssText = `
+                            padding: 15px;
+                            background: #d4edda;
+                            color: #155724;
+                            border: 1px solid #c3e6cb;
+                            border-radius: 8px;
+                            margin-bottom: 20px;
+                            font-weight: 500;
+                        `;
+                        notification.textContent = `Showing ${ordersWithItems.length} order(s) for ${dateFormatted}`;
+                        container.insertAdjacentElement('beforebegin', notification);
+                        
+                        // Auto-remove notification after 5 seconds
+                        setTimeout(() => notification.remove(), 5000);
+                    }
+                } else {
+                    container.innerHTML = '<div class="empty-state"><p>Error loading orders</p></div>';
+                }
+            } catch (error) {
+                console.error('Error loading orders by date:', error);
+                container.innerHTML = '<div class="empty-state"><p>Error loading orders. Please check if the server is running.</p></div>';
             }
         }
 
