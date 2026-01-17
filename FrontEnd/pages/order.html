@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="../js/auth-check.js"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Management - Bhatt's Kitchen</title>
+    <link rel="stylesheet" href="../css/restaurant-backgrounds-final.css">
     <style>
         * {
             margin: 0;
@@ -599,7 +602,7 @@
         }
     </style>
 </head>
-<body>
+<body class="restaurant-theme">
     <nav class="navbar">
         <div class="navbar-brand">Bhatt's Kitchen</div>
         <div class="navbar-user">
@@ -607,7 +610,8 @@
                 <span class="user-name">Manager Name</span>
                 <span class="user-role">Manager</span>
             </div>
-            <button class="logout-btn">Logout</button>
+            <!-- <button class="logout-btn">Logout</button> -->
+            <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
     </nav>
 
@@ -625,8 +629,8 @@
 
         <main class="main-content">
             <div class="page-header">
-                <h1>Order Management</h1>
-                <p>Manage incoming orders and track order status</p>
+                <h1 style="color: white;">Order Management</h1>
+                <p style="color: white;">Manage incoming orders and track order status</p>
             </div>
 
             <div class="action-bar">
@@ -1314,15 +1318,24 @@
                 container.innerHTML = '<div class="empty-state"><p>Error searching orders</p></div>';
             }
         }
-
-        // Create order card HTML
+        
+        // Create order card HTML - WITH DATE
         function createOrderCard(order) {
             const statusClass = `status-${order.order_status.toLowerCase()}`;
-            const time = new Date(order.order_date).toLocaleTimeString('en-US', {
+            
+            // Format date and time
+            const orderDateTime = new Date(order.order_date);
+            const date = orderDateTime.toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+            const time = orderDateTime.toLocaleTimeString('en-US', {
                 hour: '2-digit',
                 minute: '2-digit',
                 hour12: true
             });
+            
             const actions = getOrderActions(order);
             
             const itemsList = order.order_items && order.order_items.length > 0
@@ -1334,6 +1347,11 @@
                 ? `<span class="order-type-badge type-${order.order_type.toLowerCase().replace('-', '')}">${order.order_type}</span>`
                 : '';
             
+            // Handle customer data - show if available, otherwise show placeholder
+            const customerName = order.customer_name || 'Walk-in Customer';
+            const customerPhone = order.customer_phone || 'Not Provided';
+            const customerAddress = order.customer_address || null;
+            
             return `
                 <div class="order-card">
                     <div class="order-header">
@@ -1341,24 +1359,24 @@
                         <span class="order-status ${statusClass}">${order.order_status}</span>
                     </div>
                     <div class="order-details">
-                        ${order.customer_name ? `
-                            <div class="detail-item">
-                                <span class="detail-label">Customer</span>
-                                <span class="detail-value">${order.customer_name}</span>
-                            </div>
-                        ` : ''}
-                        ${order.customer_phone ? `
-                            <div class="detail-item">
-                                <span class="detail-label">Phone</span>
-                                <span class="detail-value">${order.customer_phone}</span>
-                            </div>
-                        ` : ''}
+                        <div class="detail-item">
+                            <span class="detail-label">Customer</span>
+                            <span class="detail-value">${customerName}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Phone</span>
+                            <span class="detail-value">${customerPhone}</span>
+                        </div>
                         ${order.table_id ? `
                             <div class="detail-item">
                                 <span class="detail-label">Table</span>
                                 <span class="detail-value">Table ${order.table_id}</span>
                             </div>
                         ` : ''}
+                        <div class="detail-item">
+                            <span class="detail-label">Date</span>
+                            <span class="detail-value">${date}</span>
+                        </div>
                         <div class="detail-item">
                             <span class="detail-label">Time</span>
                             <span class="detail-value">${time}</span>
@@ -1369,13 +1387,13 @@
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">Amount</span>
-                            <span class="detail-value">₹${order.final_amount}</span>
+                            <span class="detail-value">₹${parseFloat(order.final_amount).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                         </div>
                     </div>
-                    ${order.customer_address ? `
+                    ${customerAddress ? `
                         <div class="detail-item" style="margin: 12px 0;">
                             <span class="detail-label">Address</span>
-                            <span class="detail-value" style="font-weight: 400;">${order.customer_address}</span>
+                            <span class="detail-value" style="font-weight: 400;">${customerAddress}</span>
                         </div>
                     ` : ''}
                     <div class="order-items">
@@ -1394,9 +1412,8 @@
                         ${actions}
                     </div>
                 </div>
-            `;
-        }
-
+                `;
+            }
         // Get appropriate actions based on order status
         function getOrderActions(order) {
             switch (order.order_status) {
@@ -1541,6 +1558,22 @@
         document.getElementById('newOrderModal').addEventListener('click', function(e) {
             if (e.target === this) closeNewOrderModal();
         });
+
+        
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                // Clear all session data
+                sessionStorage.clear();
+                localStorage.removeItem('staffData');
+                localStorage.removeItem('rememberedUser');
+                
+                alert('You have been logged out successfully!');
+                
+                // Try absolute path from root
+                window.location.href = './Loginpage-new.html';
+            }
+        }
     </script>
 </body>
 </html>

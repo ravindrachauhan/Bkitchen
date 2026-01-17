@@ -4,6 +4,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const routes = require('./routes');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,6 +29,13 @@ app.get('/', (req, res) => {
         message: 'Welcome to Hotel Management System API!',
         version: '1.0.0',
         endpoints: {
+            // 👇 ADD THIS NEW SECTION AT THE TOP 👇
+            authentication: {
+                login: 'POST /api/auth/login',
+                logout: 'POST /api/auth/logout',
+                verify: 'GET /api/auth/verify?staff_id=:id'
+            },
+            // 👆 END OF NEW SECTION 👆
             staff: {
                 getAll: 'GET /api/staff',
                 getOne: 'GET /api/staff/:id',

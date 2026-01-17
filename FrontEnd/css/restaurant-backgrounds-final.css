@@ -1,0 +1,315 @@
+/* 
+   Restaurant Background Themes for Bhatt's Kitchen - ALL PAGES VERSION
+   Author: Restaurant Management System
+   Purpose: Elegant, LIGHTER background images for all pages
+   Updated: January 2026
+*/
+
+/* ========================================
+   COMMON BACKGROUND STYLES - LIGHTER
+   ======================================== */
+
+/* Base body styling with background */
+body.restaurant-theme {
+    position: relative;
+    min-height: 100vh;
+    background: #1a1a1a;
+}
+
+/* Background overlay - LIGHTER VERSION (70% opacity instead of 95%) */
+body.restaurant-theme::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(45, 90, 61, 0.70) 0%, rgba(45, 90, 61, 0.60) 100%),
+                url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1920&q=80') center/cover no-repeat;
+    background-attachment: fixed;
+    z-index: -1;
+}
+
+/* ========================================
+   ALTERNATIVE BACKGROUND THEMES - LIGHTER
+   ======================================== */
+
+/* Theme 1: Indian Restaurant Ambiance - LIGHTER */
+body.theme-indian::before {
+    background: linear-gradient(135deg, rgba(45, 90, 61, 0.68) 0%, rgba(29, 53, 37, 0.58) 100%),
+                url('https://images.unsplash.com/photo-1552566626-52f8b828add9?w=1920&q=80') center/cover no-repeat;
+    background-attachment: fixed;
+}
+
+/* Theme 2: Food Spread - LIGHTER */
+body.theme-food::before {
+    background: linear-gradient(135deg, rgba(45, 90, 61, 0.65) 0%, rgba(29, 53, 37, 0.55) 100%),
+                url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1920&q=80') center/cover no-repeat;
+    background-attachment: fixed;
+}
+
+/* Theme 3: Modern Dining - LIGHTER */
+body.theme-modern::before {
+    background: linear-gradient(135deg, rgba(45, 90, 61, 0.65) 0%, rgba(29, 53, 37, 0.60) 100%),
+                url('https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1920&q=80') center/cover no-repeat;
+    background-attachment: fixed;
+}
+
+/* Theme 4: Indian Thali - LIGHTER */
+body.theme-thali::before {
+    background: linear-gradient(135deg, rgba(45, 90, 61, 0.68) 0%, rgba(29, 53, 37, 0.58) 100%),
+                url('https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=1920&q=80') center/cover no-repeat;
+    background-attachment: fixed;
+}
+
+/* Theme 5: Kitchen Professional - LIGHTER */
+body.theme-kitchen::before {
+    background: linear-gradient(135deg, rgba(45, 90, 61, 0.63) 0%, rgba(29, 53, 37, 0.55) 100%),
+                url('https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=1920&q=80') center/cover no-repeat;
+    background-attachment: fixed;
+}
+
+/* Theme 6: Elegant Bar/Restaurant - LIGHTER */
+body.theme-elegant::before {
+    background: linear-gradient(135deg, rgba(45, 90, 61, 0.67) 0%, rgba(29, 53, 37, 0.57) 100%),
+                url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1920&q=80') center/cover no-repeat;
+    background-attachment: fixed;
+}
+
+/* Theme 7: Indian Spices - LIGHTER */
+body.theme-spices::before {
+    background: linear-gradient(135deg, rgba(45, 90, 61, 0.68) 0%, rgba(29, 53, 37, 0.58) 100%),
+                url('https://images.unsplash.com/photo-1596040033229-a0b3b0c6c2b0?w=1920&q=80') center/cover no-repeat;
+    background-attachment: fixed;
+}
+
+/* Theme 8: Traditional Cooking - LIGHTER */
+body.theme-traditional::before {
+    background: linear-gradient(135deg, rgba(45, 90, 61, 0.65) 0%, rgba(29, 53, 37, 0.57) 100%),
+                url('https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=1920&q=80') center/cover no-repeat;
+    background-attachment: fixed;
+}
+
+/* ========================================
+   LOGIN PAGE SPECIFIC BACKGROUNDS
+   ======================================== */
+
+body.login-page {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+body.login-page::before {
+    background: linear-gradient(135deg, rgba(45, 90, 61, 0.72) 0%, rgba(29, 53, 37, 0.78) 100%),
+                url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1920&q=80') center/cover no-repeat;
+}
+
+/* ========================================
+   COMPONENT ENHANCEMENTS - UPDATED
+   ======================================== */
+
+/* Navbar - Semi-transparent green with white text */
+.navbar.with-bg {
+    background: rgba(45, 90, 61, 0.90);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    color: white;
+}
+
+/* Sidebar - Semi-transparent green with white links */
+.sidebar.with-bg {
+    background: rgba(45, 90, 61, 0.85);
+    backdrop-filter: blur(15px);
+    box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+}
+
+.sidebar.with-bg a {
+    color: white;
+    font-weight: 500;
+}
+
+.sidebar.with-bg a:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-left: 4px solid #d4a017;
+}
+
+.sidebar.with-bg a.active {
+    background: rgba(212, 160, 23, 0.25);
+    color: white;
+    border-left: 4px solid #d4a017;
+    font-weight: 600;
+}
+
+/* Page headers - Semi-transparent with white text */
+.page-header.with-bg {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.page-header.with-bg h1 {
+    color: white;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+}
+
+.page-header.with-bg p {
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.4);
+}
+
+/* Cards - White with transparency */
+.card.with-bg {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Main content area */
+.main-content.with-bg {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(3px);
+}
+
+/* Tables and data containers */
+.data-container.with-bg,
+.orders-container.with-bg,
+.inventory-table.with-bg,
+.receipts-table.with-bg {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+/* Modal enhancement */
+.modal-content.with-bg {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(15px);
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+}
+
+/* Stats cards */
+.stat-card.with-bg {
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* ========================================
+   TEXT COLOR UTILITIES
+   ======================================== */
+
+.text-white {
+    color: white !important;
+}
+
+.text-white-shadow {
+    color: white !important;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.text-white-light {
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+}
+
+/* ========================================
+   ANIMATION EFFECTS
+   ======================================== */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.slide-in {
+    animation: slideIn 0.6s ease-out;
+}
+
+/* ========================================
+   MOBILE RESPONSIVENESS
+   ======================================== */
+
+@media (max-width: 768px) {
+    body.restaurant-theme::before {
+        background-size: cover;
+        background-position: center center;
+    }
+    
+    .card.with-bg,
+    .data-container.with-bg {
+        background: rgba(255, 255, 255, 0.96);
+    }
+    
+    .sidebar.with-bg {
+        background: rgba(45, 90, 61, 0.92);
+    }
+}
+
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+
+@media print {
+    body.restaurant-theme::before {
+        display: none;
+    }
+    
+    body {
+        background: white;
+    }
+    
+    .sidebar.with-bg,
+    .navbar.with-bg {
+        background: white;
+        color: black;
+    }
+}
+
+/* ========================================
+   USAGE INSTRUCTIONS
+   ======================================== */
+
+/*
+RECOMMENDED THEMES FOR EACH PAGE:
+
+Dashboard:        <body class="restaurant-theme">
+Order Management: <body class="restaurant-theme theme-indian">
+Inventory:        <body class="restaurant-theme theme-food">
+Reports:          <body class="restaurant-theme theme-modern">
+Receipts:         <body class="restaurant-theme theme-elegant">
+Discounts:        <body class="restaurant-theme theme-thali">
+Login Page:       <body class="restaurant-theme login-page">
+
+APPLY TO COMPONENTS:
+<nav class="navbar with-bg">
+<aside class="sidebar with-bg">
+<div class="page-header with-bg">
+<div class="card with-bg">
+<div class="orders-container with-bg">
+<div class="inventory-table with-bg">
+*/

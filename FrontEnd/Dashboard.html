@@ -1,10 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+    <script src="./js/auth-check.js"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manager Dashboard - Bhatt's Kitchen</title>
+    <link rel="stylesheet" href="./css/restaurant-backgrounds-final.css">
     <style>
+
+        body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(45, 90, 61, 0.70) 0%, rgba(45, 90, 61, 0.60) 100%),
+                    url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1920&q=80') center/cover no-repeat;
+        background-attachment: fixed;
+        z-index: -1;
+        }
         * {
             margin: 0;
             padding: 0;
@@ -17,7 +34,8 @@
         }
 
         .navbar {
-            background: #2d5a3d;
+            /* background: #2d5a3d; */
+            background: rgba(45, 90, 61, 0.90);
             color: white;
             padding: 20px 40px;
             display: flex;
@@ -227,7 +245,7 @@
         }
     </style>
 </head>
-<body>
+<body class="restaurant-theme">
     <nav class="navbar">
         <div class="navbar-brand">Bhatt's Kitchen</div>
         <div class="navbar-user">
@@ -253,8 +271,8 @@
 
         <main class="main-content">
             <div class="page-header">
-                <h1>Welcome to Bhatt's Kitchen</h1>
-                <p>Manage your restaurant operations efficiently</p>
+                <h1 style="color: white;">Welcome to Bhatt's Kitchen</h1>
+                <p style="color: white;">Manage your restaurant operations efficiently</p>
             </div>
 
             <!-- Quick Stats Dashboard -->
@@ -329,7 +347,7 @@
         </main>
     </div>
 
-    <script>
+    <!-- <script>
         const API_BASE_URL = 'http://localhost:3000/api';
 
         const RBAC = {
@@ -485,6 +503,330 @@
             // Refresh stats every 30 seconds
             setInterval(loadDashboardStats, 30000);
         });
-    </script>
+    </script> -->
+
+    <!-- <script>
+    const API_BASE_URL = 'http://localhost:3000/api';
+
+    const RBAC = {
+        roles: {
+            manager: {
+                dashboard: 'full',
+                orderManagement: true,
+                inventory: true,
+                reports: true,
+                discounts: 'apply_only',
+                receipts: true,
+                userSettings: false
+            }
+        }
+    };
+
+    class AuthManager {
+        constructor() {
+            this.currentUser = null;
+            this.loadSession();
+        }
+
+        loadSession() {
+            // Check both sessionStorage and localStorage
+            let sessionData = sessionStorage.getItem('staffData') || localStorage.getItem('staffData');
+            if (sessionData) {
+                this.currentUser = JSON.parse(sessionData);
+            }
+        }
+
+        getCurrentUser() {
+            return this.currentUser;
+        }
+
+        isLoggedIn() {
+            return this.currentUser !== null;
+        }
+
+        logout() {
+            sessionStorage.removeItem('userSession');
+            sessionStorage.removeItem('staffData');
+            localStorage.removeItem('rememberedUser');
+            localStorage.removeItem('staffData');
+            this.currentUser = null;
+            alert('You have been logged out successfully!');
+            window.location.href = './pages/Loginpage-new.html';
+        }
+
+        protectPage() {
+            if (!this.isLoggedIn()) {
+                alert('Please login to access this page!');
+                window.location.href = './pages/Loginpage-new.html';
+                return false;
+            }
+            
+            // Verify user is manager
+            if (this.currentUser.role !== 'manager') {
+                alert('Access Denied! This page is only for Manager users.');
+                window.location.href = './pages/Loginpage-new.html';
+                return false;
+            }
+            return true;
+        }
+    }
+
+    const auth = new AuthManager();
+
+    // Navigation with action parameter
+    function navigateToPage(pageUrl, action) {
+        sessionStorage.setItem('pageAction', action);
+        window.location.href = pageUrl;
+    }
+
+    // NEW: Navigate to Orders Today with date filter
+    function navigateToOrdersToday() {
+        const today = new Date().toISOString().split('T')[0];
+        sessionStorage.setItem('pageAction', 'filterDate');
+        sessionStorage.setItem('filterDate', today);
+        window.location.href = './pages/order.html';
+    }
+
+    // NEW: Navigate to Low Stock items
+    function navigateToLowStock() {
+        sessionStorage.setItem('pageAction', 'filterLowStock');
+        window.location.href = './pages/inventory.html';
+    }
+
+    // NEW: Navigate to Out of Stock items
+    function navigateToOutOfStock() {
+        sessionStorage.setItem('pageAction', 'filterOutOfStock');
+        window.location.href = './pages/inventory.html';
+    }
+
+    // Logout function
+    function logout() {
+        if (confirm('Are you sure you want to logout?')) {
+            auth.logout();
+        }
+    }
+
+    // Load dashboard statistics
+    async function loadDashboardStats() {
+        try {
+            // Get today's date in YYYY-MM-DD format
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+
+            // Fetch orders for today
+            const ordersResponse = await fetch(`${API_BASE_URL}/orders/date/${todayStr}`);
+            const ordersResult = await ordersResponse.json();
+            
+            if (ordersResult.success) {
+                const ordersCount = ordersResult.data.length;
+                const revenueToday = ordersResult.data.reduce((sum, order) => sum + parseFloat(order.final_amount || 0), 0);
+                
+                document.getElementById('ordersToday').textContent = ordersCount;
+                document.getElementById('revenueToday').textContent = `₹${revenueToday.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+            }
+
+            // Fetch inventory statistics
+            const inventoryStatsResponse = await fetch(`${API_BASE_URL}/inventory/stats`);
+            const inventoryStatsResult = await inventoryStatsResponse.json();
+            
+            if (inventoryStatsResult.success) {
+                document.getElementById('lowStockAlerts').textContent = inventoryStatsResult.data.lowStockItems;
+                document.getElementById('outOfStock').textContent = inventoryStatsResult.data.outOfStock;
+            }
+
+        } catch (error) {
+            console.error('Error loading dashboard stats:', error);
+            
+            // Show error state
+            document.getElementById('ordersToday').textContent = '—';
+            document.getElementById('revenueToday').textContent = '—';
+            document.getElementById('lowStockAlerts').textContent = '—';
+            document.getElementById('outOfStock').textContent = '—';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Authentication check - ENABLED
+        if (!auth.protectPage()) {
+            return;
+        }
+
+        const user = auth.getCurrentUser();
+        if (user) {
+            document.querySelector('.user-name').textContent = user.fullname || user.username || user.name;
+        } else {
+            document.querySelector('.user-name').textContent = 'Manager';
+        }
+
+        // Load dashboard statistics
+        loadDashboardStats();
+
+        // Refresh stats every 30 seconds
+        setInterval(loadDashboardStats, 30000);
+    });
+    </script> -->
+
+    <script>
+    const API_BASE_URL = 'http://localhost:3000/api';
+
+    const RBAC = {
+        roles: {
+            manager: {
+                dashboard: 'full',
+                orderManagement: true,
+                inventory: true,
+                reports: true,
+                discounts: 'apply_only',
+                receipts: true,
+                userSettings: false
+            }
+        }
+    };
+
+    class AuthManager {
+        constructor() {
+            this.currentUser = null;
+            this.loadSession();
+        }
+
+        loadSession() {
+            // Check both sessionStorage and localStorage
+            let sessionData = sessionStorage.getItem('staffData') || localStorage.getItem('staffData');
+            if (sessionData) {
+                this.currentUser = JSON.parse(sessionData);
+            }
+        }
+
+        getCurrentUser() {
+            return this.currentUser;
+        }
+
+        isLoggedIn() {
+            return this.currentUser !== null;
+        }
+
+        logout() {
+            sessionStorage.removeItem('userSession');
+            sessionStorage.removeItem('staffData');
+            localStorage.removeItem('rememberedUser');
+            localStorage.removeItem('staffData');
+            this.currentUser = null;
+            alert('You have been logged out successfully!');
+            window.location.href = './pages/Loginpage-new.html';
+        }
+
+        protectPage() {
+            if (!this.isLoggedIn()) {
+                alert('Please login to access this page!');
+                window.location.href = './pages/Loginpage-new.html';
+                return false;
+            }
+            
+            // For educational purposes - allow all logged-in users
+            // In production, you would check specific roles here
+            return true;
+        }
+    }
+
+    const auth = new AuthManager();
+
+    // Navigation with action parameter
+    function navigateToPage(pageUrl, action) {
+        sessionStorage.setItem('pageAction', action);
+        window.location.href = pageUrl;
+    }
+
+    // Navigate to Orders Today with date filter
+    function navigateToOrdersToday() {
+        const today = new Date().toISOString().split('T')[0];
+        sessionStorage.setItem('pageAction', 'filterDate');
+        sessionStorage.setItem('filterDate', today);
+        window.location.href = './pages/order.html';
+    }
+
+    // Navigate to Low Stock items
+    function navigateToLowStock() {
+        sessionStorage.setItem('pageAction', 'filterLowStock');
+        window.location.href = './pages/inventory.html';
+    }
+
+    // Navigate to Out of Stock items
+    function navigateToOutOfStock() {
+        sessionStorage.setItem('pageAction', 'filterOutOfStock');
+        window.location.href = './pages/inventory.html';
+    }
+
+    // Logout function
+    function logout() {
+        if (confirm('Are you sure you want to logout?')) {
+            auth.logout();
+        }
+    }
+
+    // Load dashboard statistics
+    async function loadDashboardStats() {
+        try {
+            // Get today's date in YYYY-MM-DD format
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+
+            // Fetch orders for today
+            const ordersResponse = await fetch(`${API_BASE_URL}/orders/date/${todayStr}`);
+            const ordersResult = await ordersResponse.json();
+            
+            if (ordersResult.success) {
+                const ordersCount = ordersResult.data.length;
+                const revenueToday = ordersResult.data.reduce((sum, order) => sum + parseFloat(order.final_amount || 0), 0);
+                
+                document.getElementById('ordersToday').textContent = ordersCount;
+                document.getElementById('revenueToday').textContent = `₹${revenueToday.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+            }
+
+            // Fetch inventory statistics
+            const inventoryStatsResponse = await fetch(`${API_BASE_URL}/inventory/stats`);
+            const inventoryStatsResult = await inventoryStatsResponse.json();
+            
+            if (inventoryStatsResult.success) {
+                document.getElementById('lowStockAlerts').textContent = inventoryStatsResult.data.lowStockItems;
+                document.getElementById('outOfStock').textContent = inventoryStatsResult.data.outOfStock;
+            }
+
+        } catch (error) {
+            console.error('Error loading dashboard stats:', error);
+            
+            // Show error state
+            document.getElementById('ordersToday').textContent = '—';
+            document.getElementById('revenueToday').textContent = '—';
+            document.getElementById('lowStockAlerts').textContent = '—';
+            document.getElementById('outOfStock').textContent = '—';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Authentication check
+        if (!auth.protectPage()) {
+            return;
+        }
+
+        const user = auth.getCurrentUser();
+        if (user) {
+            // Display user information
+            const userName = user.name || user.fullname || user.username || 'User';
+            const userRole = user.role || user.position || 'Staff';
+            
+            document.querySelector('.user-name').textContent = userName;
+            document.querySelector('.user-role').textContent = userRole;
+        } else {
+            document.querySelector('.user-name').textContent = 'Manager';
+            document.querySelector('.user-role').textContent = 'Manager';
+        }
+
+        // Load dashboard statistics
+        loadDashboardStats();
+
+        // Refresh stats every 30 seconds
+        setInterval(loadDashboardStats, 30000);
+    });
+</script>
 </body>
 </html>

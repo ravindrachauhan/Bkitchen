@@ -2533,4 +2533,179 @@ router.put('/inventory/:id', async (req, res) => {
     }
 });
 
+// ==================== AUTHENTICATION APIs ====================
+
+// POST - Login endpoint
+router.post('/auth/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email and password are required'
+            });
+        }
+        
+        // Query staff table for credentials
+        const [rows] = await db.query(
+            `SELECT 
+                staff_id, 
+                staff_name, 
+                email, 
+                password_hash, 
+                position, 
+                phone_number,
+                is_active 
+             FROM staff 
+             WHERE email = ? AND is_deleted = 0`,
+            [email]
+        );
+        
+        if (rows.length === 0) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid email or password'
+            });
+        }
+        
+        const staff = rows[0];
+        
+        // Check if staff is active
+        if (staff.is_active === 0) {
+            return res.status(403).json({
+                success: false,
+                message: 'Your account has been deactivated. Please contact administrator.'
+            });
+        }
+        
+        // Verify password
+        if (password !== staff.password_hash) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid email or password'
+            });
+        }
+        
+        // Determine access level
+        const accessLevel = getAccessLevel(staff.position);
+        
+        res.json({
+            success: true,
+            message: 'Login successful',
+            data: {
+                staff_id: staff.staff_id,
+                staff_name: staff.staff_name,
+                email: staff.email,
+                position: staff.position,
+                phone_number: staff.phone_number,
+                access_level: accessLevel
+            }
+        });
+        
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error during login',
+            error: error.message
+        });
+    }
+});
+
+// Helper function for access levels
+function getAccessLevel(position) {
+    const pos = position.toLowerCase();
+    
+    if (pos === 'admin' || pos === 'manager') {
+        return {
+            role: position,
+            menus: ['Dashboard', 'Order Management', 'Inventory', 'Reports', 'Discounts', 'Receipts'],
+            fullAccess: true
+        };
+    } else if (pos === 'supervisor') {
+        return {
+            role: position,
+            menus: ['Dashboard', 'Order Management', 'Inventory', 'Discounts', 'Receipts'],
+            fullAccess: false
+        };
+    } else if (pos === 'chef' || pos === 'assistant chef') {
+        return {
+            role: position,
+            menus: ['Order Management', 'Inventory', 'Receipts'],
+            fullAccess: false
+        };
+    } else if (pos === 'waiter' || pos === 'cashier' || pos === 'receptionist') {
+        return {
+            role: position,
+            menus: ['Order Management', 'Inventory', 'Discounts', 'Receipts'],
+            fullAccess: false
+        };
+    } else if (pos === 'helper' || pos === 'cleaner') {
+        return {
+            role: position,
+            menus: [],
+            fullAccess: false
+        };
+    } else {
+        return {
+            role: position,
+            menus: [],
+            fullAccess: false
+        };
+    }
+}
+
+// POST - Logout endpoint
+router.post('/auth/logout', async (req, res) => {
+    res.json({
+        success: true,
+        message: 'Logged out successfully'
+    });
+});
+
+// GET - Verify session
+router.get('/auth/verify', async (req, res) => {
+    const staffId = req.query.staff_id;
+    
+    if (!staffId) {
+        return res.status(401).json({
+            success: false,
+            message: 'No session found'
+        });
+    }
+    
+    try {
+        const [rows] = await db.query(
+            `SELECT staff_id, staff_name, email, position, is_active 
+             FROM staff 
+             WHERE staff_id = ? AND is_deleted = 0`,
+            [staffId]
+        );
+        
+        if (rows.length === 0 || rows[0].is_active === 0) {
+            return res.status(401).json({
+                success: false,
+                message: 'Session expired or invalid'
+            });
+        }
+        
+        const accessLevel = getAccessLevel(rows[0].position);
+        
+        res.json({
+            success: true,
+            data: {
+                ...rows[0],
+                access_level: accessLevel
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error verifying session',
+            error: error.message
+        });
+    }
+});
+
 module.exports = router;
